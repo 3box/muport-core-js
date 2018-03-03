@@ -1,0 +1,34 @@
+{
+  "name": "muport-core",
+  "version": "0.0.1",
+  "description": "Create and use µPort identities",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uport-project/muport-core-js.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/uport-project/muport-core-js/issues"
+  },
+  "homepage": "https://github.com/uport-project/muport-core-js#readme",
+  "dependencies": {
+    "bip39": "^2.5.0",
+    "bs58": "^4.0.1",
+    "ethereumjs-wallet": "^0.6.0",
+    "secrets.js": "^0.1.8",
+    "tweetnacl": "^1.0.0",
+    "tweetnacl-util": "^0.15.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "jest": "^22.4.2"
+  }
+}
