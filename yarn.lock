@@ -380,6 +380,10 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
+bluebird@^3.5.1:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.1.tgz#d9551f9de98f1fcda1e683d17ee91a0602ee2eb9"
+
 bn.js@^4.11.3, bn.js@^4.4.0, bn.js@^4.8.0:
   version "4.11.8"
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.11.8.tgz#2cde09eb5ee341f484746bb0309b3253b1b1442f"
@@ -743,6 +747,12 @@ detect-libc@^1.0.2:
 detect-newline@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-2.1.0.tgz#f41f1c10be4b00e87b5f13da680759f2c5bfd3e2"
+
+did-resolver@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/did-resolver/-/did-resolver-0.0.4.tgz#d835c44d50acbfeff11b34755cf5ad33d21c7a03"
+  dependencies:
+    babel-runtime "^6.26.0"
 
 diff@^3.2.0:
   version "3.4.0"
@@ -1301,6 +1311,12 @@ invariant@^2.2.2:
 invert-kv@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-1.0.0.tgz#104a8e4aaca6d3d8cd157a8ef8bfab2d7a3ffdb6"
+
+ipfs-mini@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/ipfs-mini/-/ipfs-mini-1.1.2.tgz#9c0fad3fa00a82c82caed1ae04b3b99ed3b3e95d"
+  dependencies:
+    xmlhttprequest "^1.8.0"
 
 is-arrayish@^0.2.1:
   version "0.2.1"
@@ -2027,6 +2043,14 @@ minimist@~0.0.1:
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
+
+muport-did-resolver@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/muport-did-resolver/-/muport-did-resolver-0.0.2.tgz#db00efc00310001bd5e5cebce1551f22d0d1cb53"
+  dependencies:
+    babel-runtime "^6.26.0"
+    did-resolver "^0.0.4"
+    ipfs-mini "^1.1.2"
 
 nan@^2.0.5, nan@^2.0.8, nan@^2.2.1, nan@^2.3.0:
   version "2.9.2"
@@ -3050,6 +3074,10 @@ ws@^4.0.0:
 xml-name-validator@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/xml-name-validator/-/xml-name-validator-3.0.0.tgz#6ae73e06de4d8c6e47f9fb181f78d648ad457c6a"
+
+xmlhttprequest@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/xmlhttprequest/-/xmlhttprequest-1.8.0.tgz#67fe075c5c24fef39f9d65f5f7b7fe75171968fc"
 
 y18n@^3.2.1:
   version "3.2.1"
