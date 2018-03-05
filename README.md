@@ -29,11 +29,11 @@ Returns the DID document of the identity.
 #### serializeState ()
 Returns an object containing the serialized state. Note that this includes information about the private keys.
 
-#### static async createIdentity (name, delegates)
-This function creates a new identity with the given name and creates a recovery network using the given delegates. The `delegates` variable needs to be an array of did strings. The function returns an instance of MuPort
+#### static async newIdentity (name, delegates)
+This function creates a new identity with the given name and creates a recovery network using the given delegates. The `delegates` variable needs to be an array of did strings. The function returns an instance of MuPort. This function can also be called without delegates to create an identity without a recovery network.
 
 #### static async recoverIdentity (did, shares)
 This function returns an instance of MuPort for the recovered identity. The did parameter has to be the did of the identity being recovered and shares needs to be an array of atleast two decrypted shares.
 
-#### static async resolveIdentity (did)
+#### static async resolveIdentityDocument (did)
 This function returns the DID document of the given DID.
