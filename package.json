@@ -1,5 +1,5 @@
 {
-  "name": "muport-core",
+  "name": "@philosophie/muport-core",
   "version": "0.0.1",
   "description": "Create and use µPort identities",
   "main": "lib/muport.js",
