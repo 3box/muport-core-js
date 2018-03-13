@@ -1,0 +1,13 @@
+{
+  "presets": [
+    ["env", {
+      "debug": true
+    }]
+  ],
+  "plugins": [
+    "transform-runtime"
+  ],
+  "ignore": [
+    "**/*.test.js"
+  ]
+}
