@@ -1,6 +1,6 @@
 {
   "name": "@philosophie/muport-core",
-  "version": "0.0.2",
+  "version": "0.0.9",
   "description": "Create and use µPort identities",
   "main": "lib/muport.js",
   "directories": {
