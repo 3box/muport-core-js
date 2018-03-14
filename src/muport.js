@@ -76,12 +76,10 @@ class MuPort {
 
 const createDidDocument = (publicKeys, recoveryNetwork, publicProfile) => {
   // TODO - this is not a real did document
-  let doc = publicKeys;
-  doc['version'] = 1;
-  // let doc = {
-  //   version: 1,
-  //   ...publicKeys
-  // }
+  let doc = {
+    version: 1,
+    ...publicKeys
+  }
   if (recoveryNetwork) {
     doc.recoveryNetwork = recoveryNetwork
   }
