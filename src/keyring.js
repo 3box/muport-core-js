@@ -74,6 +74,14 @@ class Keyring {
     }
   }
 
+  symEncrypt (msg, nonce) {
+    return symEncryptBase(msg, this.symEncryptionKey, nonce)
+  }
+
+  symDecrypt (ciphertext, nonce, toBuffer) {
+    return symDecryptBase(msg, this.symEncryptionKey, nonce, toBuffer)
+  }
+
   getPublicKeys () {
     return {
       signingKey: this.signingKey._hdkey._publicKey.toString('hex'),
@@ -114,11 +122,7 @@ const didToBuffer = (didUri) => {
   return bs58.decode(hash)
 }
 
-const bufferToDid = (didBuffer) => {
-  return ('did:muport:' + bs58.encode(didBuffer))
-}
-
-const symEncrypt = (msg, symKey, nonce) => {
+const symEncryptBase = (msg, symKey, nonce) => {
   nonce = nonce || randomNonce()
   if (typeof msg === 'string') {
     msg = nacl.util.decodeUTF8(msg)
@@ -132,7 +136,7 @@ const symEncrypt = (msg, symKey, nonce) => {
   }
 }
 
-const symDecrypt = (ciphertext, symKey, nonce, toBuffer) => {
+const symDecryptBase = (ciphertext, symKey, nonce, toBuffer) => {
   ciphertext = nacl.util.decodeBase64(ciphertext)
   nonce = nacl.util.decodeBase64(nonce)
 

@@ -2,6 +2,7 @@ const IPFS = require('ipfs-mini')
 const promisifyAll = require('bluebird').promisifyAll
 const resolve = require('did-resolver')
 const registerMuportResolver = require('muport-did-resolver')
+const bs58 = require('bs58')
 const Keyring = require('./keyring')
 
 registerMuportResolver()
@@ -36,7 +37,7 @@ class MuPort {
   getRecoveryNetworkDids () {
     const toBuffer = true
     const dids = this.document.symEncryptedData.symEncDids.map( 
-      (encDid) => Keyring.bufferToDid(Keyring.symDecrypt(encDid.ciphertext, this.symEncryptionKey, encDid.nonce, toBuffer))
+      (encDid) => bufferToDid(this.keyring.symDecrypt(encDid.ciphertext, encDid.nonce, toBuffer))
     )
     return dids
   }
@@ -53,11 +54,12 @@ class MuPort {
     const publicProfile = { name }
     const keyring = new Keyring()
     let recoveryNetwork
+    let symEncryptedDelegateDids
     if (delegateDids) {
       const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await resolve(did)).asymEncryptionKey))
       recoveryNetwork = await keyring.createShares(delegateDids, didsPublicKeys)
       
-      const symEncryptedDelegateDids = delegateDids.map((did) => Keyring.symEncrypt(Keyring.didToBuffer(did), keyring.symEncryptionKey))
+      symEncryptedDelegateDids = delegateDids.map((did) => keyring.symEncrypt(didToBuffer(did)))
 
     }
     const publicKeys = keyring.getPublicKeys()
@@ -101,6 +103,15 @@ const createDidDocument = (publicKeys, recoveryNetwork, publicProfile, symEncryp
     doc.symEncryptedData = symEncryptedData
   }
   return doc
+}
+
+const bufferToDid = (didBuffer) => {
+  return ('did:muport:' + bs58.encode(didBuffer))
+}
+
+const didToBuffer = (didUri) => {
+  const hash = didUri.split(':')[2]
+  return bs58.decode(hash)
 }
 
 module.exports = MuPort
