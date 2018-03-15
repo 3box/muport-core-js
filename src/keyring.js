@@ -79,7 +79,7 @@ class Keyring {
   }
 
   symDecrypt (ciphertext, nonce, toBuffer) {
-    return symDecryptBase(msg, this.symEncryptionKey, nonce, toBuffer)
+    return symDecryptBase(ciphertext, this.symEncryptionKey, nonce, toBuffer)
   }
 
   getPublicKeys () {

@@ -34,7 +34,7 @@ class MuPort {
     return this.document
   }
 
-  getRecoveryNetworkDids () {
+  getRecoveryDelegateDids () {
     const toBuffer = true
     const dids = this.document.symEncryptedData.symEncDids.map( 
       (encDid) => bufferToDid(this.keyring.symDecrypt(encDid.ciphertext, encDid.nonce, toBuffer))
