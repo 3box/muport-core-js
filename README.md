@@ -26,6 +26,9 @@ Returns the DID of the identity.
 #### getDidDocument ()
 Returns the DID document of the identity.
 
+#### getRecoveryDelegateDids ()
+Returns a list of the DIDs of the recovery delegates.
+
 #### serializeState ()
 Returns an object containing the serialized state. Note that this includes information about the private keys.
 
