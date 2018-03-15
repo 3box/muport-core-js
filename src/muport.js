@@ -2,6 +2,7 @@ const IPFS = require('ipfs-mini')
 const promisifyAll = require('bluebird').promisifyAll
 const resolve = require('did-resolver')
 const registerMuportResolver = require('muport-did-resolver')
+const bs58 = require('bs58')
 const Keyring = require('./keyring')
 
 registerMuportResolver()
@@ -33,6 +34,14 @@ class MuPort {
     return this.document
   }
 
+  getRecoveryDelegateDids () {
+    const toBuffer = true
+    const dids = this.document.symEncryptedData.symEncDids.map( 
+      (encDid) => bufferToDid(this.keyring.symDecrypt(encDid.ciphertext, encDid.nonce, toBuffer))
+    )
+    return dids
+  }
+
   serializeState () {
     return {
       did: this.did,
@@ -45,13 +54,17 @@ class MuPort {
     const publicProfile = { name }
     const keyring = new Keyring()
     let recoveryNetwork
+    let symEncryptedDelegateDids
     if (delegateDids) {
       const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await resolve(did)).asymEncryptionKey))
       recoveryNetwork = await keyring.createShares(delegateDids, didsPublicKeys)
+      
+      symEncryptedDelegateDids = delegateDids.map((did) => keyring.symEncrypt(didToBuffer(did)))
+
     }
     const publicKeys = keyring.getPublicKeys()
 
-    const doc = createDidDocument(publicKeys, recoveryNetwork, publicProfile)
+    const doc = createDidDocument(publicKeys, recoveryNetwork, publicProfile, {symEncDids: symEncryptedDelegateDids})
     const did = 'did:muport:' + await ipfs.addJSONAsync(doc)
 
     return new MuPort({
@@ -74,7 +87,7 @@ class MuPort {
   }
 }
 
-const createDidDocument = (publicKeys, recoveryNetwork, publicProfile) => {
+const createDidDocument = (publicKeys, recoveryNetwork, publicProfile, symEncryptedData) => {
   // TODO - this is not a real did document
   let doc = {
     version: 1,
@@ -86,7 +99,19 @@ const createDidDocument = (publicKeys, recoveryNetwork, publicProfile) => {
   if (publicProfile) {
     doc.publicProfile = publicProfile
   }
+  if (symEncryptedData) {
+    doc.symEncryptedData = symEncryptedData
+  }
   return doc
+}
+
+const bufferToDid = (didBuffer) => {
+  return ('did:muport:' + bs58.encode(didBuffer))
+}
+
+const didToBuffer = (didUri) => {
+  const hash = didUri.split(':')[2]
+  return bs58.decode(hash)
 }
 
 module.exports = MuPort

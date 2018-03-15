@@ -51,4 +51,12 @@ describe('Keyring', () => {
     const recoveredKeyring = await Keyring.recoverKeyring([share2, share3])
     assert.deepEqual(recoveredKeyring.getPublicKeys(), publicKeys)
   })
+
+  it('symmetrically encrypts correctly', async () => {
+    const testMsg = "Very secret test message"
+    let box = keyring2.symEncrypt(testMsg)
+    let cleartext = keyring2.symDecrypt(box.ciphertext, box.nonce)
+    assert.equal(cleartext, testMsg)
+  })
+
 })

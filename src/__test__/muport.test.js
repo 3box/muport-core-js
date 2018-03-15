@@ -29,7 +29,7 @@ let id1
 let id2
 let id3
 let id4
-
+let recoveredId4
 
 describe('MuPort', () => {
 
@@ -50,8 +50,17 @@ describe('MuPort', () => {
     const didOfLostId = id4.getDid()
     const share2 = await id2.helpRecover(didOfLostId)
     const share3 = await id3.helpRecover(didOfLostId)
-    const recoveredId4 = await MuPort.recoverIdentity(didOfLostId, [share2, share3])
+    recoveredId4 = await MuPort.recoverIdentity(didOfLostId, [share2, share3])
 
     assert.deepEqual(recoveredId4.serializeState(), id4.serializeState())
   })
+
+  it('returns the delegate DIDs correctly', async () => {
+    const dids = id4.getRecoveryDelegateDids()
+    assert.deepEqual(dids, [id1.getDid(), id2.getDid(), id3.getDid()])
+    
+    const didsFromRecovered = recoveredId4.getRecoveryDelegateDids()
+    assert.deepEqual(didsFromRecovered, [id1.getDid(), id2.getDid(), id3.getDid()])
+  })
+
 })
