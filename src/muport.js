@@ -33,6 +33,14 @@ class MuPort {
     return this.document
   }
 
+  getRecoveryNetworkDids () {
+    const toBuffer = true
+    const dids = this.document.symEncryptedData.symEncDids.map( 
+      (encDid) => Keyring.bufferToDid(Keyring.symDecrypt(encDid.ciphertext, this.symEncryptionKey, encDid.nonce, toBuffer))
+    )
+    return dids
+  }
+
   serializeState () {
     return {
       did: this.did,
@@ -48,10 +56,13 @@ class MuPort {
     if (delegateDids) {
       const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await resolve(did)).asymEncryptionKey))
       recoveryNetwork = await keyring.createShares(delegateDids, didsPublicKeys)
+      
+      const symEncryptedDelegateDids = delegateDids.map((did) => Keyring.symEncrypt(Keyring.didToBuffer(did), keyring.symEncryptionKey))
+
     }
     const publicKeys = keyring.getPublicKeys()
 
-    const doc = createDidDocument(publicKeys, recoveryNetwork, publicProfile)
+    const doc = createDidDocument(publicKeys, recoveryNetwork, publicProfile, {symEncDids: symEncryptedDelegateDids})
     const did = 'did:muport:' + await ipfs.addJSONAsync(doc)
 
     return new MuPort({
@@ -74,7 +85,7 @@ class MuPort {
   }
 }
 
-const createDidDocument = (publicKeys, recoveryNetwork, publicProfile) => {
+const createDidDocument = (publicKeys, recoveryNetwork, publicProfile, symEncryptedData) => {
   // TODO - this is not a real did document
   let doc = {
     version: 1,
@@ -85,6 +96,9 @@ const createDidDocument = (publicKeys, recoveryNetwork, publicProfile) => {
   }
   if (publicProfile) {
     doc.publicProfile = publicProfile
+  }
+  if (symEncryptedData) {
+    doc.symEncryptedData = symEncryptedData
   }
   return doc
 }

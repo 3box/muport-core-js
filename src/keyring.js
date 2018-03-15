@@ -94,6 +94,7 @@ class Keyring {
     this.managementKey = this.baseKey.deriveChild(1)
     const tmpEncKey = this.baseKey.deriveChild(2)._hdkey._privateKey
     this.asymEncryptionKey = nacl.box.keyPair.fromSecretKey(tmpEncKey)
+    this.symEncryptionKey = this.baseKey.deriveChild(3)._hdkey._privateKey
   }
 
   static async recoverKeyring (shares) {
@@ -112,5 +113,35 @@ const didToBuffer = (didUri) => {
   const hash = didUri.split(':')[2]
   return bs58.decode(hash)
 }
+
+const bufferToDid = (didBuffer) => {
+  return ('did:muport:' + bs58.encode(didBuffer))
+}
+
+const symEncrypt = (msg, symKey, nonce) => {
+  nonce = nonce || randomNonce()
+  if (typeof msg === 'string') {
+    msg = nacl.util.decodeUTF8(msg)
+  }
+
+  const ciphertext = nacl.secretbox(msg, nonce, symKey)
+
+  return {
+    nonce: nacl.util.encodeBase64(nonce),
+    ciphertext: nacl.util.encodeBase64(ciphertext)
+  }
+}
+
+const symDecrypt = (ciphertext, symKey, nonce, toBuffer) => {
+  ciphertext = nacl.util.decodeBase64(ciphertext)
+  nonce = nacl.util.decodeBase64(nonce)
+
+  const cleartext = nacl.secretbox.open(ciphertext, nonce, symKey)
+  if (toBuffer) {
+    return cleartext ? Buffer.from(cleartext) : null
+  }
+  return cleartext ? nacl.util.encodeUTF8(cleartext) : null
+}
+
 
 module.exports = Keyring
