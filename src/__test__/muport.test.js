@@ -63,4 +63,14 @@ describe('MuPort', () => {
     assert.deepEqual(didsFromRecovered, [id1.getDid(), id2.getDid(), id3.getDid()])
   })
 
+  it('returns an empty list of delegate DIDs', async () => {
+    const dids = id1.getRecoveryDelegateDids()
+    assert.equal(dids.length, 0)
+    
+    const didsFromRecovered = recoveredId4.getRecoveryDelegateDids()
+    assert.deepEqual(didsFromRecovered, [id1.getDid(), id2.getDid(), id3.getDid()])
+  })
+
+
+
 })
