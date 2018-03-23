@@ -1,5 +1,6 @@
 const bip39 = require('bip39')
 const hdkey = require('ethereumjs-wallet/hdkey')
+const Tx = require('ethereumjs-tx')
 const nacl = require('tweetnacl')
 nacl.util = require('tweetnacl-util')
 const bs58 = require('bs58')
@@ -80,6 +81,17 @@ class Keyring {
 
   symDecrypt (ciphertext, nonce, toBuffer) {
     return symDecryptBase(ciphertext, this.symEncryptionKey, nonce, toBuffer)
+  }
+
+  signManagementTx (txParams) {
+    const privKey = this.managementKey.getWallet().getPrivateKey()
+    let tx = new Tx(txParams)
+    tx.sign(privKey)
+    return tx.serialize().toString('hex')
+  }
+
+  getManagementAddress () {
+    return this.managementKey.getWallet().getChecksumAddressString()
   }
 
   getPublicKeys () {

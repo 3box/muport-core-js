@@ -59,4 +59,23 @@ describe('Keyring', () => {
     assert.equal(cleartext, testMsg)
   })
 
+  it('returns the correct management address', () => {
+    const managementAddress = '0xC94629D67851E1CA43961c3B17964Db3e0b02FFB'
+    const address = keyring1.getManagementAddress()
+    assert.equal(address, managementAddress)
+  })
+
+  it('signs management tx correctly', () => {
+    const signedRawTx = 'f889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ba0da757d67e406f5846b4edb2b8ae3449141251ebcf12521165f4a04c18ca41395a00c2864ec3bd0c7e8388708caf019a855561c66a148f3928732f454ab59b1b71c'
+    const params = {
+      nonce: '0x00',
+      gasPrice: '0x09184e72a000',
+      gasLimit: '0x2710',
+      to: '0x0000000000000000000000000000000000000000',
+      value: '0x00',
+      data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
+    }
+    const rawTx = keyring1.signManagementTx(params)
+    assert.equal(rawTx, signedRawTx)
+  })
 })
