@@ -19,7 +19,7 @@ class EthereumUtils {
     const encodedHash = encodeIpfsHash(ipfsHash)
     const data = encodeMethodCall('publish', [managementAddress, claimKey, encodedHash])
     //const data = encodeMethodCall('publish', [managementAddress, '0x22', '0x11'])
-    const nonce = await web3.eth.getTransactionCountAsync()
+    const nonce = await web3.eth.getTransactionCountAsync(managementAddress)
     const gasPrice = (await web3.eth.getGasPriceAsync()).toNumber()
     const txParams = {
       nonce,
@@ -27,7 +27,8 @@ class EthereumUtils {
       to: RevokeAndPublishAddress,
       data,
     }
-    txParams.gasLimit = await web3.eth.estimateGasAsync({...txParams, from: managementAddress})
+    // we need to add 500 as a gas buffer
+    txParams.gasLimit = (await web3.eth.estimateGasAsync({...txParams, from: managementAddress})) + 500
     return txParams
   }
 

@@ -87,7 +87,6 @@ class Keyring {
     const privKey = this.managementKey.getWallet().getPrivateKey()
     let tx = new Tx(txParams)
     tx.sign(privKey)
-    //return tx
     return '0x' + tx.serialize().toString('hex')
   }
 

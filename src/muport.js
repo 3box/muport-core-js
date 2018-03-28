@@ -61,10 +61,8 @@ class MuPort {
     // TODO - make on-chain tx
     const address = this.keyring.getManagementAddress()
     const txParams = await EthereumUtils.createPublishTxParams(this.documentHash, address)
-    console.log(txParams)
     const costInEther = EthereumUtils.calculateTxCost(txParams)
     const signedTx = this.keyring.signManagementTx(txParams)
-    console.log(signedTx)
 
     return {
       address,

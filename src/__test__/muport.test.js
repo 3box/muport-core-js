@@ -1,6 +1,7 @@
 const assert = require('chai').assert
 const ganache = require('ganache-cli')
-const EthereumClaimsRegistryArtifact = require('ethereum-claims-registry').registry
+const bs58 = require('bs58')
+const EthereumClaimsRegistryAbi = require('ethereum-claims-registry').registry.abi
 const Web3 = require('web3')
 const promisifyAll = require('bluebird').promisifyAll
 let IPFS = require('ipfs-mini')
@@ -40,6 +41,7 @@ describe('MuPort', () => {
   let server
   let web3
   let accounts
+  let claimsReg
 
   beforeAll(async () => {
     server = promisifyAll(ganache.server({unlocked_accounts: [0]}))
@@ -49,8 +51,8 @@ describe('MuPort', () => {
     accounts = await web3.eth.getAccountsAsync()
     await deploy(deployData.EthereumClaimsRegistry)
     await deploy(deployData.RevokeAndPublish)
-    const EthereumClaimsRegistry = web3.eth.contract(EthereumClaimsRegistryArtifact)
-    //claimsReg = promisifyAll(EthereumClaimsRegistry.at(deployData.EthereumClaimsRegistry.contractAddress))
+    const EthereumClaimsRegistry = web3.eth.contract(EthereumClaimsRegistryAbi)
+    claimsReg = promisifyAll(EthereumClaimsRegistry.at(deployData.EthereumClaimsRegistry.contractAddress))
   })
 
   it('create an identity correctly', async () => {
@@ -93,14 +95,31 @@ describe('MuPort', () => {
 
   it('updateDelegates works as intended', async () => {
     const updateData = await id1.updateDelegates([id2.getDid(), id3.getDid(), id4.getDid()])
-    console.log(updateData)
 
+    let threwError = false
+    try {
+      await updateData.finishUpdate()
+    } catch (e) {
+      threwError = true
+    }
+    assert.isTrue(threwError, 'finishUpdate should throw if no funds in managementAddress')
+    await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
+    await updateData.finishUpdate()
+
+    let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
+    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
+    assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
+  })
+
+  it('updateDelegates second time works as intended', async () => {
+    const updateData = await id1.updateDelegates([id4.getDid(), id2.getDid(), id3.getDid()])
 
     await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
     await updateData.finishUpdate()
 
-    //let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
-    //assert.equal(Buffer.from(entry.split('00').join('').slice(2), 'hex').toString(), testVal1, 'should have correct value')
+    let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
+    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
+    assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
   })
 
   afterAll(() => {
