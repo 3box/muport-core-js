@@ -4,6 +4,7 @@ const resolve = require('did-resolver')
 const registerMuportResolver = require('muport-did-resolver')
 const bs58 = require('bs58')
 const Keyring = require('./keyring')
+const EthereumUtils = require('./ethereum-utils')
 
 registerMuportResolver()
 const IPFS_CONF = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' }
@@ -17,7 +18,10 @@ class MuPort {
     }
     this.did = opts.did
     this.document = opts.document
+    this.documentHash = opts.documentHash || this.did.split(':')[2]
     this.keyring = new Keyring(opts.keyring)
+
+    // TODO - verify integrity of identity (resolving ID should result in the same did document, etc)
   }
 
   async helpRecover (did) {
@@ -45,10 +49,37 @@ class MuPort {
     return dids
   }
 
+  async updateDelegates (delegateDids) {
+    if (delegateDids.length !== 3) throw new Error('Must provide exactly 3 DIDs')
+    // generate new recoveryNetwork
+    const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await resolve(did)).asymEncryptionKey))
+    const recoveryNetwork = await this.keyring.createShares(delegateDids, didsPublicKeys)
+
+    this.document.recoveryNetwork = recoveryNetwork
+    this.documentHash = await ipfs.addJSONAsync(this.document)
+
+    // TODO - make on-chain tx
+    const address = this.keyring.getManagementAddress()
+    const txParams = await EthereumUtils.createPublishTxParams(this.documentHash, address)
+    console.log(txParams)
+    const costInEther = EthereumUtils.calculateTxCost(txParams)
+    const signedTx = this.keyring.signManagementTx(txParams)
+    console.log(signedTx)
+
+    return {
+      address,
+      costInEther,
+      finishUpdate: async () => {
+        await EthereumUtils.sendRawTx(signedTx)
+      }
+    }
+  }
+
   serializeState () {
     return {
       did: this.did,
       document: this.document,
+      documentHash: this.documentHash,
       keyring: this.keyring.serialize()
     }
   }
@@ -61,18 +92,20 @@ class MuPort {
     if (delegateDids) {
       const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await resolve(did)).asymEncryptionKey))
       recoveryNetwork = await keyring.createShares(delegateDids, didsPublicKeys)
-      
+
       symEncryptedDelegateDids = delegateDids.map((did) => keyring.symEncrypt(didToBuffer(did)))
 
     }
     const publicKeys = keyring.getPublicKeys()
 
     const doc = createDidDocument(publicKeys, recoveryNetwork, publicProfile, {symEncDids: symEncryptedDelegateDids})
-    const did = 'did:muport:' + await ipfs.addJSONAsync(doc)
+    const docHash = await ipfs.addJSONAsync(doc)
+    const did = 'did:muport:' + docHash
 
     return new MuPort({
       did,
       document: doc,
+      documentHash: docHash,
       keyring: keyring.serialize()
     })
   }
