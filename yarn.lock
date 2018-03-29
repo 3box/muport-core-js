@@ -1687,9 +1687,9 @@ esutils@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
 
-"ethereum-claims-registry@ssh://git@github.com:uport-project/ethereum-claims-registry.git#feature/ch8563/revokePublish-interface":
-  version "0.0.1"
-  resolved "ssh://git@github.com:uport-project/ethereum-claims-registry.git#a958dcd38f98e6214ad50606ca0affec766f2358"
+ethereum-claims-registry@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/ethereum-claims-registry/-/ethereum-claims-registry-0.0.3.tgz#4cdd0532fbf1a00abac59955e3353b63066a4c3a"
 
 ethereum-common@^0.0.18:
   version "0.0.18"
