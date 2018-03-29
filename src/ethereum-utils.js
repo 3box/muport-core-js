@@ -7,20 +7,21 @@ const RevokeAndPublishArtifact = require('ethereum-claims-registry').extensions.
 const RevokeAndPublishAbi = RevokeAndPublishArtifact.abi
 const RevokeAndPublishAddress = RevokeAndPublishArtifact.networks[1].address
 
-let web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8555'))
-web3.eth = promisifyAll(web3.eth)
-
-
+const PROVIDER_URL = 'https://mainnet.infura.io'
 const claimKey = 'muPortDocumentIPFS1220'
 
 class EthereumUtils {
 
-  static async createPublishTxParams (ipfsHash, managementAddress) {
+  constructor (providerUrl) {
+    this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl || PROVIDER_URL))
+    this.web3.eth = promisifyAll(this.web3.eth)
+  }
+
+  async createPublishTxParams (ipfsHash, managementAddress) {
     const encodedHash = encodeIpfsHash(ipfsHash)
     const data = encodeMethodCall('publish', [managementAddress, claimKey, encodedHash])
-    //const data = encodeMethodCall('publish', [managementAddress, '0x22', '0x11'])
-    const nonce = await web3.eth.getTransactionCountAsync(managementAddress)
-    const gasPrice = (await web3.eth.getGasPriceAsync()).toNumber()
+    const nonce = await this.web3.eth.getTransactionCountAsync(managementAddress)
+    const gasPrice = (await this.web3.eth.getGasPriceAsync()).toNumber()
     const txParams = {
       nonce,
       gasPrice,
@@ -28,16 +29,16 @@ class EthereumUtils {
       data,
     }
     // we need to add 500 as a gas buffer
-    txParams.gasLimit = (await web3.eth.estimateGasAsync({...txParams, from: managementAddress})) + 500
+    txParams.gasLimit = (await this.web3.eth.estimateGasAsync({...txParams, from: managementAddress})) + 500
     return txParams
   }
 
-  static calculateTxCost (txParams) {
-    return web3.fromWei(txParams.gasPrice * txParams.gasLimit, 'ether')
+  calculateTxCost (txParams) {
+    return this.web3.fromWei(txParams.gasPrice * txParams.gasLimit, 'ether')
   }
 
-  static async sendRawTx (rawTx) {
-    await web3.eth.sendRawTransactionAsync(rawTx)
+  async sendRawTx (rawTx) {
+    await this.web3.eth.sendRawTransactionAsync(rawTx)
   }
 }
 

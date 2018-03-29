@@ -28,6 +28,7 @@ IPFS.prototype.addJSON = (json, cb) => {
   // fake ipfs hash
   cb(null, 'QmZZBBKPS2NWc6PMZbUk9zUHCo1SHKzQPPX4ndfwaYzmP' + num++)
 }
+const RPC_PROV_URL = 'http://localhost:8555'
 const deployData = require('./deployData.json')
 const MuPort = require('../muport')
 let id1
@@ -56,7 +57,7 @@ describe('MuPort', () => {
   })
 
   it('create an identity correctly', async () => {
-    id1 = await MuPort.newIdentity('lala')
+    id1 = await MuPort.newIdentity('lala', null, {rpcProviderUrl: RPC_PROV_URL})
     const serialized = id1.serializeState()
 
     const tmpId = new MuPort(serialized)

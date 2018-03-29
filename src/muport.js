@@ -6,9 +6,8 @@ const bs58 = require('bs58')
 const Keyring = require('./keyring')
 const EthereumUtils = require('./ethereum-utils')
 
-registerMuportResolver()
 const IPFS_CONF = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' }
-const ipfs = promisifyAll(new IPFS(IPFS_CONF))
+let ipfs
 
 class MuPort {
 
@@ -16,12 +15,15 @@ class MuPort {
     if (!opts.did || !opts.document || !opts.keyring) {
       throw new Error('Data missing for restoring identity')
     }
+    initIpfs(opts)
     this.did = opts.did
     this.document = opts.document
     this.documentHash = opts.documentHash || this.did.split(':')[2]
     this.keyring = new Keyring(opts.keyring)
 
     // TODO - verify integrity of identity (resolving ID should result in the same did document, etc)
+
+    this.ethUtils = new EthereumUtils(opts.rpcProviderUrl)
   }
 
   async helpRecover (did) {
@@ -58,17 +60,16 @@ class MuPort {
     this.document.recoveryNetwork = recoveryNetwork
     this.documentHash = await ipfs.addJSONAsync(this.document)
 
-    // TODO - make on-chain tx
     const address = this.keyring.getManagementAddress()
-    const txParams = await EthereumUtils.createPublishTxParams(this.documentHash, address)
-    const costInEther = EthereumUtils.calculateTxCost(txParams)
+    const txParams = await this.ethUtils.createPublishTxParams(this.documentHash, address)
+    const costInEther = this.ethUtils.calculateTxCost(txParams)
     const signedTx = this.keyring.signManagementTx(txParams)
 
     return {
       address,
       costInEther,
       finishUpdate: async () => {
-        await EthereumUtils.sendRawTx(signedTx)
+        await this.ethUtils.sendRawTx(signedTx)
       }
     }
   }
@@ -82,7 +83,8 @@ class MuPort {
     }
   }
 
-  static async newIdentity (name, delegateDids) {
+  static async newIdentity (name, delegateDids, opts) {
+    initIpfs(opts)
     const publicProfile = { name }
     const keyring = new Keyring()
     let recoveryNetwork
@@ -104,11 +106,13 @@ class MuPort {
       did,
       document: doc,
       documentHash: docHash,
-      keyring: keyring.serialize()
+      keyring: keyring.serialize(),
+      ...opts
     })
   }
 
-  static async recoverIdentity (did, shares) {
+  static async recoverIdentity (did, shares, opts) {
+    initIpfs(opts)
     return new MuPort({
       did,
       document: await resolve(did),
@@ -119,6 +123,11 @@ class MuPort {
   static async resolveIdentityDocument (did) {
     return resolve(did)
   }
+}
+
+const initIpfs = ({ipfsConf, rpcProviderUrl} = {}) => {
+  registerMuportResolver(ipfsConf)
+  ipfs = promisifyAll(new IPFS(ipfsConf || IPFS_CONF))
 }
 
 const createDidDocument = (publicKeys, recoveryNetwork, publicProfile, symEncryptedData) => {
