@@ -15,7 +15,7 @@ class MuPort {
     if (!opts.did || !opts.document || !opts.keyring) {
       throw new Error('Data missing for restoring identity')
     }
-    initIpfs(opts)
+    initIpfs(opts.ipfsConf)
     this.did = opts.did
     this.document = opts.document
     this.documentHash = opts.documentHash || this.did.split(':')[2]
@@ -24,10 +24,11 @@ class MuPort {
     // TODO - verify integrity of identity (resolving ID should result in the same did document, etc)
 
     this.ethUtils = new EthereumUtils(opts.rpcProviderUrl)
+    registerMuportResolver(opts.ipfsConf)
   }
 
   async helpRecover (did) {
-    const didDoc = await resolve(did)
+    const didDoc = await MuPort.resolveIdentityDocument(did)
 
     return this.keyring.decryptOneShare(didDoc.recoveryNetwork, didDoc.asymEncryptionKey, this.did)
   }
@@ -54,7 +55,7 @@ class MuPort {
   async updateDelegates (delegateDids) {
     if (delegateDids.length !== 3) throw new Error('Must provide exactly 3 DIDs')
     // generate new recoveryNetwork
-    const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await resolve(did)).asymEncryptionKey))
+    const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did)).asymEncryptionKey))
     const recoveryNetwork = await this.keyring.createShares(delegateDids, didsPublicKeys)
 
     this.document.recoveryNetwork = recoveryNetwork
@@ -83,14 +84,14 @@ class MuPort {
     }
   }
 
-  static async newIdentity (name, delegateDids, opts) {
-    initIpfs(opts)
+  static async newIdentity (name, delegateDids, opts = {}) {
+    initIpfs(opts.ipfsConf)
     const publicProfile = { name }
     const keyring = new Keyring()
     let recoveryNetwork
     let symEncryptedDelegateDids
     if (delegateDids) {
-      const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await resolve(did)).asymEncryptionKey))
+      const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did)).asymEncryptionKey))
       recoveryNetwork = await keyring.createShares(delegateDids, didsPublicKeys)
 
       symEncryptedDelegateDids = delegateDids.map((did) => keyring.symEncrypt(didToBuffer(did)))
@@ -111,12 +112,13 @@ class MuPort {
     })
   }
 
-  static async recoverIdentity (did, shares, opts) {
-    initIpfs(opts)
+  static async recoverIdentity (did, shares, opts = {}) {
+    initIpfs(opts.ipfsConf)
     return new MuPort({
       did,
-      document: await resolve(did),
-      keyring: (await Keyring.recoverKeyring(shares)).serialize()
+      document: await MuPort.resolveIdentityDocument(did),
+      keyring: (await Keyring.recoverKeyring(shares)).serialize(),
+      ...opts
     })
   }
 
@@ -125,8 +127,7 @@ class MuPort {
   }
 }
 
-const initIpfs = ({ipfsConf, rpcProviderUrl} = {}) => {
-  registerMuportResolver(ipfsConf)
+const initIpfs = (ipfsConf) => {
   ipfs = promisifyAll(new IPFS(ipfsConf || IPFS_CONF))
 }
 
