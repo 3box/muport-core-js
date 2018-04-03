@@ -3,7 +3,7 @@ var CryptoJS = require('crypto-js')
 const bs58 = require('bs58')
 const Web3 = require('web3')
 const promisifyAll = require('bluebird').promisifyAll
-const RevokeAndPublishArtifact = require('ethereum-claims-registry').extensions.RevokeAndPublish
+const RevokeAndPublishArtifact = require('ethereum-claims-registry').applications.RevokeAndPublish
 const RevokeAndPublishAbi = RevokeAndPublishArtifact.abi
 const RevokeAndPublishAddress = RevokeAndPublishArtifact.networks[1].address
 

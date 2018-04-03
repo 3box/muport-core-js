@@ -28,9 +28,9 @@ class MuPort {
   }
 
   async helpRecover (did) {
-    const didDoc = await MuPort.resolveIdentityDocument(did)
+    const muportDoc = await MuPort.resolveIdentityDocument(did)
 
-    return this.keyring.decryptOneShare(didDoc.recoveryNetwork, didDoc.asymEncryptionKey, this.did)
+    return this.keyring.decryptOneShare(muportDoc.recoveryNetwork, muportDoc.asymEncryptionKey, this.did)
   }
 
   getDid() {
@@ -99,7 +99,7 @@ class MuPort {
     }
     const publicKeys = keyring.getPublicKeys()
 
-    const doc = createDidDocument(publicKeys, recoveryNetwork, publicProfile, {symEncDids: symEncryptedDelegateDids})
+    const doc = createMuportDocument(publicKeys, recoveryNetwork, publicProfile, {symEncDids: symEncryptedDelegateDids})
     const docHash = await ipfs.addJSONAsync(doc)
     const did = 'did:muport:' + docHash
 
@@ -123,7 +123,18 @@ class MuPort {
   }
 
   static async resolveIdentityDocument (did) {
-    return resolve(did)
+    const didDoc = await resolve(did)
+    const publicKeys = {
+      signingKey: didDoc.publicKey.find(key => (key.id.indexOf('#signingKey') !== -1)).publicKeyHex,
+      managementKey: didDoc.publicKey.find(key => (key.id.indexOf('#managementKey') !== -1)).publicKeyHex,
+      asymEncryptionKey: didDoc.publicKey.find(key => (key.id.indexOf('#encryptionKey') !== -1)).publicKeyBase64
+    }
+    const recoveryNetwork = didDoc.muportData.recoveryNetwork
+    const publicProfile = {
+      name: didDoc.muportData.nym
+    }
+    const symEncryptedData = didDoc.muportData.symEncryptedData
+    return createMuportDocument(publicKeys, recoveryNetwork, publicProfile, symEncryptedData)
   }
 }
 
@@ -131,8 +142,7 @@ const initIpfs = (ipfsConf) => {
   ipfs = promisifyAll(new IPFS(ipfsConf || IPFS_CONF))
 }
 
-const createDidDocument = (publicKeys, recoveryNetwork, publicProfile, symEncryptedData) => {
-  // TODO - this is not a real did document
+const createMuportDocument = (publicKeys, recoveryNetwork, publicProfile, symEncryptedData) => {
   let doc = {
     version: 1,
     ...publicKeys
