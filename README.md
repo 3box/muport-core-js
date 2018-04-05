@@ -51,4 +51,4 @@ This function creates a new identity with the given name and creates a recovery 
 This function returns an instance of MuPort for the recovered identity. The did parameter has to be the did of the identity being recovered and shares needs to be an array of atleast two decrypted shares.
 
 #### static async resolveIdentityDocument (did)
-This function returns the µPort document of the given DID.
+This function returns the µPort document of the given DID. If you want to resolve the DID document for an identity please use `muport-did-resolver`

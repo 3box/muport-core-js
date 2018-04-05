@@ -110,6 +110,9 @@ describe('MuPort', () => {
     let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
     let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
     assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
+
+    let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid())
+    assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
   })
 
   it('updateDelegates second time works as intended', async () => {
@@ -121,6 +124,9 @@ describe('MuPort', () => {
     let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
     let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
     assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
+
+    let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid())
+    assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
   })
 
   afterAll(() => {

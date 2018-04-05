@@ -24,7 +24,7 @@ class MuPort {
     // TODO - verify integrity of identity (resolving ID should result in the same did document, etc)
 
     this.ethUtils = new EthereumUtils(opts.rpcProviderUrl)
-    registerMuportResolver(opts.ipfsConf)
+    registerMuportResolver({ ipfsConf: opts.ipfsConf, rpcProviderUrl: opts.rpcProviderUrl })
   }
 
   async helpRecover (did) {
@@ -91,7 +91,7 @@ class MuPort {
     let recoveryNetwork
     let symEncryptedDelegateDids
     if (delegateDids) {
-      const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did)).asymEncryptionKey))
+      const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did, opts)).asymEncryptionKey))
       recoveryNetwork = await keyring.createShares(delegateDids, didsPublicKeys)
 
       symEncryptedDelegateDids = delegateDids.map((did) => keyring.symEncrypt(didToBuffer(did)))
@@ -116,13 +116,16 @@ class MuPort {
     initIpfs(opts.ipfsConf)
     return new MuPort({
       did,
-      document: await MuPort.resolveIdentityDocument(did),
+      document: await MuPort.resolveIdentityDocument(did, opts),
       keyring: (await Keyring.recoverKeyring(shares)).serialize(),
       ...opts
     })
   }
 
-  static async resolveIdentityDocument (did) {
+  static async resolveIdentityDocument (did, opts) {
+    if (opts) {
+      registerMuportResolver({ ipfsConf: opts.ipfsConf, rpcProviderUrl: opts.rpcProviderUrl })
+    }
     const didDoc = await resolve(did)
     const publicKeys = {
       signingKey: didDoc.publicKey.find(key => (key.id.indexOf('#signingKey') !== -1)).publicKeyHex,
