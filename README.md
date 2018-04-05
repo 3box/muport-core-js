@@ -29,6 +29,18 @@ Returns the DID document of the identity.
 #### getRecoveryDelegateDids ()
 Returns a list of the DIDs of the recovery delegates.
 
+#### async updateDelegates (delegateDids)
+This function is used to update the recoveryNetwork. The `delegates` variable needs to be an array of did strings. Te function returns an object that looks like this:
+```
+{
+  address: <an ethereum address>,
+  costInEther: <number>,
+  finishUpdate: <function>
+}
+```
+
+In order to complete the update of the delegates you have to send `costInEther` ether to the `address` on mainnet (or other network if you are using a custom config). Once that is done the `finishUpdate` function can be called. This function sends a transaction to the network that updates the identity. The function will throw an error if there is to little ether in the `address`.
+
 #### serializeState ()
 Returns an object containing the serialized state. Note that this includes information about the private keys.
 
@@ -39,4 +51,4 @@ This function creates a new identity with the given name and creates a recovery 
 This function returns an instance of MuPort for the recovered identity. The did parameter has to be the did of the identity being recovered and shares needs to be an array of atleast two decrypted shares.
 
 #### static async resolveIdentityDocument (did)
-This function returns the DID document of the given DID.
+This function returns the µPort document of the given DID. If you want to resolve the DID document for an identity please use `muport-did-resolver`
