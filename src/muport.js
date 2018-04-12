@@ -2,6 +2,7 @@ const IPFS = require('ipfs-mini')
 const promisifyAll = require('bluebird').promisifyAll
 const resolve = require('did-resolver')
 const registerMuportResolver = require('muport-did-resolver')
+const didJWT = require('did-jwt')
 const bs58 = require('bs58')
 const Keyring = require('./keyring')
 const EthereumUtils = require('./ethereum-utils')
@@ -73,6 +74,22 @@ class MuPort {
         await this.ethUtils.sendRawTx(signedTx)
       }
     }
+  }
+
+  async signJWT (payload, audience) {
+    const settings = {
+      signer: this.keyring.getJWTSigner(),
+      issuer: this.did
+      // TODO - should we have an expiry?
+    }
+    if (audience) {
+      payload.aud = audience
+    }
+    return didJWT.createJWT(payload, settings)
+  }
+
+  async verifyJWT (jwt, audience = this.did) {
+    return didJWT.verifyJWT(jwt, {audience})
   }
 
   serializeState () {
