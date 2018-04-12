@@ -130,7 +130,7 @@ describe('MuPort', () => {
   })
 
   it('signs JWT as intended', async () => {
-    const jwt  = await id1.signJWT({test: 123}, id2.getDid())
+    const jwt  = await id1.signJWT({test: 123, aud: id2.getDid()})
     let verified
     let threwError = false
     try {

@@ -76,14 +76,11 @@ class MuPort {
     }
   }
 
-  async signJWT (payload, audience) {
+  async signJWT (payload) {
     const settings = {
       signer: this.keyring.getJWTSigner(),
       issuer: this.did
       // TODO - should we have an expiry?
-    }
-    if (audience) {
-      payload.aud = audience
     }
     return didJWT.createJWT(payload, settings)
   }
