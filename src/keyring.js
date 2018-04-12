@@ -8,6 +8,7 @@ const sss = require('secrets.js')
 const SimpleSigner = require('did-jwt').SimpleSigner
 
 const BASE_PATH = "m/7696500'/0'/0'"
+const MM_PATH = "m/44'/60'/0'/0"
 
 
 class Keyring {
@@ -114,12 +115,15 @@ class Keyring {
   _initKeysFromMnemonic(mnemonic) {
     this.mnemonic = mnemonic
     const seed = bip39.mnemonicToSeed(mnemonic)
-    this.baseKey = hdkey.fromMasterSeed(seed).derivePath(BASE_PATH)
-    this.signingKey = this.baseKey.deriveChild(0)
-    this.managementKey = this.baseKey.deriveChild(1)
-    const tmpEncKey = this.baseKey.deriveChild(2)._hdkey._privateKey
+    const seedKey = hdkey.fromMasterSeed(seed)
+    const baseKey = seedKey.derivePath(BASE_PATH)
+    this.signingKey = baseKey.deriveChild(0)
+    const tmpEncKey = baseKey.deriveChild(2)._hdkey._privateKey
     this.asymEncryptionKey = nacl.box.keyPair.fromSecretKey(tmpEncKey)
-    this.symEncryptionKey = this.baseKey.deriveChild(3)._hdkey._privateKey
+    this.symEncryptionKey = baseKey.deriveChild(3)._hdkey._privateKey
+
+    // Management key is used to sign ethereum txs, so we use the MM base path
+    this.managementKey = seedKey.derivePath(MM_PATH).deriveChild(0)
   }
 
   static async recoverKeyring (shares) {

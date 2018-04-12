@@ -17,7 +17,7 @@ describe('Keyring', () => {
   const mnemonic = 'clay rubber drama brush salute cream nerve wear stuff sentence trade conduct'
   const publicKeys = {
     signingKey: '028aaa695fa16f2a2279e1de718d80e00f4f4ddf30fe8674bbdb9e1f11778c2f77',
-    managementKey: '0291888f1c8cff90aea41cf97dc9b015f2185983524a5e6df888401565239d4d8a',
+    managementKey: '027422e4f0321f010fd6b763bac41db22dcbf3717c7a9762bd7d2b9ce302152060',
     asymEncryptionKey: 'wW1wkjQ7kaZiBvk4bhukQ15Idx6d31XKFpq/jeup5nc='
   }
   const signedData = {
@@ -66,13 +66,13 @@ describe('Keyring', () => {
   })
 
   it('returns the correct management address', () => {
-    const managementAddress = '0xC94629D67851E1CA43961c3B17964Db3e0b02FFB'
+    const managementAddress = '0x8997c4309384ECFE8A996A5e12E989fA08e9a0d1'
     const address = keyring1.getManagementAddress()
     assert.equal(address, managementAddress)
   })
 
   it('signs management tx correctly', () => {
-    const signedRawTx = '0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ba0da757d67e406f5846b4edb2b8ae3449141251ebcf12521165f4a04c18ca41395a00c2864ec3bd0c7e8388708caf019a855561c66a148f3928732f454ab59b1b71c'
+    const signedRawTx = '0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ba064ff451a7884e83428bfd94811224519e0582d4af5c177ed2afcbe75563688e4a06536e60f06fa8f4e6412b14bd748d852bb60ff9659ee5247ce1ee7b319c6c7d0'
     const params = {
       nonce: '0x00',
       gasPrice: '0x09184e72a000',
