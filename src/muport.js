@@ -12,20 +12,25 @@ let ipfs
 
 class MuPort {
 
-  constructor (opts = {}) {
-    if (!opts.did || !opts.document || !opts.keyring) {
-      throw new Error('Data missing for restoring identity')
-    }
+  constructor (serializeState, opts = {}) {
     initIpfs(opts.ipfsConf)
-    this.did = opts.did
-    this.document = opts.document
-    this.documentHash = opts.documentHash || this.did.split(':')[2]
-    this.keyring = new Keyring(opts.keyring)
-
-    // TODO - verify integrity of identity (resolving ID should result in the same did document, etc)
+    this._initIdentity(serializeState)
 
     this.ethUtils = new EthereumUtils(opts.rpcProviderUrl)
     registerMuportResolver({ ipfsConf: opts.ipfsConf, rpcProviderUrl: opts.rpcProviderUrl })
+  }
+
+  _initIdentity (serializeState) {
+    const state = JSON.parse(serializeState)
+    if (!state.did || !state.document || !state.keyring) {
+      throw new Error('Data missing for restoring identity')
+    }
+    this.did = state.did
+    this.document = state.document
+    this.documentHash = state.documentHash || this.did.split(':')[2]
+    this.keyring = new Keyring(state.keyring)
+
+    // TODO - verify integrity of identity (resolving ID should result in the same did document, etc)
   }
 
   async helpRecover (did) {
@@ -90,12 +95,12 @@ class MuPort {
   }
 
   serializeState () {
-    return {
+    return JSON.stringify({
       did: this.did,
       document: this.document,
       documentHash: this.documentHash,
       keyring: this.keyring.serialize()
-    }
+    })
   }
 
   static async newIdentity (name, delegateDids, opts = {}) {
@@ -117,23 +122,25 @@ class MuPort {
     const docHash = await ipfs.addJSONAsync(doc)
     const did = 'did:muport:' + docHash
 
-    return new MuPort({
-      did,
-      document: doc,
-      documentHash: docHash,
-      keyring: keyring.serialize(),
-      ...opts
-    })
+    return new MuPort(JSON.stringify({
+        did,
+        document: doc,
+        documentHash: docHash,
+        keyring: keyring.serialize()
+      }),
+      opts
+    )
   }
 
   static async recoverIdentity (did, shares, opts = {}) {
     initIpfs(opts.ipfsConf)
-    return new MuPort({
-      did,
-      document: await MuPort.resolveIdentityDocument(did, opts),
-      keyring: (await Keyring.recoverKeyring(shares)).serialize(),
-      ...opts
-    })
+    return new MuPort(JSON.stringify({
+        did,
+        document: await MuPort.resolveIdentityDocument(did, opts),
+        keyring: (await Keyring.recoverKeyring(shares)).serialize()
+      }),
+      opts
+    )
   }
 
   static async resolveIdentityDocument (did, opts) {
