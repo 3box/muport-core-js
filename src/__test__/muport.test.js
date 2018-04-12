@@ -5,6 +5,9 @@ const EthereumClaimsRegistryAbi = require('ethereum-claims-registry').registry.a
 const Web3 = require('web3')
 const promisifyAll = require('bluebird').promisifyAll
 let IPFS = require('ipfs-mini')
+const didJWT = require('did-jwt')
+const registerMuport = require('muport-did-resolver')
+
 IPFS.prototype.catJSON = (hash, cb) => {
   let doc
   switch (hash) {
@@ -35,6 +38,9 @@ let id1
 let id2
 let id3
 let id4
+
+registerMuport({rpcProviderUrl: RPC_PROV_URL, ipfsConf: { host: 'ipfs.infura.io', port: 5001, protocol: 'https' }})
+
 
 describe('MuPort', () => {
 
@@ -127,6 +133,19 @@ describe('MuPort', () => {
 
     let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid())
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
+  })
+
+  it('signs a JWT correctly', async () => {
+    id1 = await MuPort.newIdentity('lala', null, {rpcProviderUrl: RPC_PROV_URL})
+
+    const jwt = await id1.signJWT({name: 'Billy Bob', test: 'testing hello'})
+    //const data = await didJWT.verifyJWT(jwt)
+
+    console.log(jwt)
+    console.log(didJWT.decodeJWT(jwt))
+    //console.log(data)
+
+    //assert.deepEqual(tmpId.serializeState(), serialized)
   })
 
   afterAll(() => {

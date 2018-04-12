@@ -5,6 +5,7 @@ const registerMuportResolver = require('muport-did-resolver')
 const bs58 = require('bs58')
 const Keyring = require('./keyring')
 const EthereumUtils = require('./ethereum-utils')
+import { createJWT, SimpleSigner } from 'did-jwt'
 
 const IPFS_CONF = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' }
 let ipfs
@@ -82,6 +83,13 @@ class MuPort {
       documentHash: this.documentHash,
       keyring: this.keyring.serialize()
     }
+  }
+
+  async signJWT(payload) {
+    const signer = SimpleSigner(this.keyring.signingKey._hdkey._privateKey)
+    const jwt = await createJWT(payload,{issuer: this.did, signer})
+    
+    return jwt
   }
 
   static async newIdentity (name, delegateDids, opts = {}) {
