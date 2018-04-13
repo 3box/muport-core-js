@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "babel src --out-dir lib"
+    "build": "babel src --out-dir lib",
+    "generate-readme": "cp readme-template.md README.md; ./node_modules/.bin/jsdoc2md -d 3 src/muport.js >> README.md"
   },
   "repository": {
     "type": "git",
@@ -46,6 +47,7 @@
     "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
     "ganache-cli": "^6.1.0",
-    "jest": "^22.4.2"
+    "jest": "^22.4.2",
+    "jsdoc-to-markdown": "^4.0.1"
   }
 }
