@@ -41,6 +41,12 @@ This function is used to update the recoveryNetwork. The `delegates` variable ne
 
 In order to complete the update of the delegates you have to send `costInEther` ether to the `address` on mainnet (or other network if you are using a custom config). Once that is done the `finishUpdate` function can be called. This function sends a transaction to the network that updates the identity. The function will throw an error if there is to little ether in the `address`.
 
+#### async signJWT (payload)
+Signs the given payload (claim) and returns a promise with a JWT.
+
+#### async verifyJWT (jwt, audience)
+Verifies the given `jwt` and returns a promise that resolves to an object containing the decoded claim etc. `audience` is optional but defaults to the current DID.
+
 #### serializeState ()
 Returns an object containing the serialized state. Note that this includes information about the private keys.
 

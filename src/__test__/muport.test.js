@@ -129,6 +129,21 @@ describe('MuPort', () => {
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
   })
 
+  it('signs JWT as intended', async () => {
+    const jwt  = await id1.signJWT({test: 123, aud: id2.getDid()})
+    let verified
+    let threwError = false
+    try {
+      verified = await id1.verifyJWT(jwt)
+    } catch (e) {
+      threwError = true
+    }
+    assert.isTrue(threwError, 'trying to verify JWT with id it is not issued to should fail')
+    verified = await id2.verifyJWT(jwt)
+    assert.equal(verified.payload.aud, id2.getDid())
+    assert.equal(verified.payload.iss, id1.getDid())
+  })
+
   afterAll(() => {
     server.close()
   })

@@ -20,14 +20,20 @@ describe('Keyring', () => {
     managementKey: '0291888f1c8cff90aea41cf97dc9b015f2185983524a5e6df888401565239d4d8a',
     asymEncryptionKey: 'wW1wkjQ7kaZiBvk4bhukQ15Idx6d31XKFpq/jeup5nc='
   }
+  const signedData = {
+    r: 'b1f9c552e21b40fe95c5d3074a4ef3948a092a77fc814781bf8ae3a263499e0a',
+    s: 'a57bdeb64a1490c3e8877d2d6e0c0450a87b765d8bf6f541b65bbf3aac1926f2',
+    recoveryParam: 1
+  }
   const keyring2 = new Keyring()
   const keyring3 = new Keyring()
 
-  it('derives correct keys from mnemonic', () => {
+  it('derives correct keys from mnemonic', async () => {
     keyring1 = new Keyring({mnemonic})
 
     assert.deepEqual(keyring1.getPublicKeys(), publicKeys)
     assert.deepEqual(keyring1.serialize().mnemonic, mnemonic)
+    assert.deepEqual((await keyring1.getJWTSigner()('asdf')), signedData)
   })
 
   it('encrypts and decrypts correctly', () => {

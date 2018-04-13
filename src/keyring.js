@@ -5,6 +5,7 @@ const nacl = require('tweetnacl')
 nacl.util = require('tweetnacl-util')
 const bs58 = require('bs58')
 const sss = require('secrets.js')
+const SimpleSigner = require('did-jwt').SimpleSigner
 
 const BASE_PATH = "m/7696500'/0'/0'"
 
@@ -81,6 +82,10 @@ class Keyring {
 
   symDecrypt (ciphertext, nonce, toBuffer) {
     return symDecryptBase(ciphertext, this.symEncryptionKey, nonce, toBuffer)
+  }
+
+  getJWTSigner () {
+    return SimpleSigner(this.signingKey._hdkey._privateKey)
   }
 
   signManagementTx (txParams) {
