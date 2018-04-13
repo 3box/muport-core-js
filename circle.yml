@@ -1,0 +1,8 @@
+machine:
+  node:
+    version: v9.11.1
+
+test:
+  override:
+    - npm test
+
