@@ -1,4 +1,5 @@
 # µPort core
+[![CircleCI](https://circleci.com/gh/uport-project/muport-core-js.svg?style=svg)](https://circleci.com/gh/uport-project/muport-core-js) [![codecov](https://codecov.io/gh/uport-project/muport-core-js/branch/master/graph/badge.svg?token=G53BcQfF8N)](https://codecov.io/gh/uport-project/muport-core-js)
 
 This library is intended to be used to create, update, and recover µPort identities, as well as using the identity to sign and encrypt data.
 

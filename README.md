@@ -1,4 +1,5 @@
 # µPort core
+[![CircleCI](https://circleci.com/gh/uport-project/muport-core-js.svg?style=svg)](https://circleci.com/gh/uport-project/muport-core-js) [![codecov](https://codecov.io/gh/uport-project/muport-core-js/branch/master/graph/badge.svg?token=G53BcQfF8N)](https://codecov.io/gh/uport-project/muport-core-js)
 
 This library is intended to be used to create, update, and recover µPort identities, as well as using the identity to sign and encrypt data.
 
@@ -28,7 +29,7 @@ help other identities recover.
         * [.getDid()](#MuPort+getDid) ⇒ <code>String</code>
         * [.getDidDocument()](#MuPort+getDidDocument) ⇒ <code>Object</code>
         * [.getRecoveryDelegateDids()](#MuPort+getRecoveryDelegateDids) ⇒ <code>Array.&lt;String&gt;</code>
-        * [.updateDelegates(delegateDids)](#MuPort+updateDelegates) ⇒
+        * [.updateDelegates(delegateDids)](#MuPort+updateDelegates) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
         * [.signJWT()](#MuPort+signJWT) ⇒ <code>Promise.&lt;String, Error&gt;</code>
         * [.verifyJWT(jwt, audience)](#MuPort+verifyJWT) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
         * [.serializeState()](#MuPort+serializeState) ⇒ <code>String</code>
@@ -87,7 +88,7 @@ The recovery delegates that can help this identity recover
 **Returns**: <code>Array.&lt;String&gt;</code> - an array containing the DIDs of the delegates  
 <a name="MuPort+updateDelegates"></a>
 
-#### muPort.updateDelegates(delegateDids) ⇒
+#### muPort.updateDelegates(delegateDids) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
 This function is used to update the recoveryNetwork of the identity. The returned object
 has three properties; `address` an ethereum address, `costInEther` a number, and
 `finishUpdate` a function.
@@ -98,7 +99,7 @@ function sends a transaction to the network that updates the identity. The funct
 will throw an error if there is to little ether in the `address`.
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: {Promise<Object, Error>             an object with the data needed to finalize the update  
+**Returns**: <code>Promise.&lt;Object, Error&gt;</code> - an object with the data needed to finalize the update  
 
 | Param | Type | Description |
 | --- | --- | --- |
