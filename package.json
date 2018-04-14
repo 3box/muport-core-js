@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --coverage",
     "build": "babel src --out-dir lib",
     "generate-readme": "cp readme-template.md README.md; ./node_modules/.bin/jsdoc2md -d 3 src/muport.js >> README.md"
   },
