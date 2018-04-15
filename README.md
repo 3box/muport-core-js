@@ -15,7 +15,7 @@ const MuPort = require('muport-core')
 
 <a name="MuPort"></a>
 
-### MuPort
+## MuPort
 Primary object for interacting with a µPort identity. MuPort enables creation and
 updating of µPort identities. It also provides functionality to sign claims and
 help other identities recover.
@@ -40,7 +40,7 @@ help other identities recover.
 
 <a name="new_MuPort_new"></a>
 
-#### new MuPort(serializeState, [opts])
+### new MuPort(serializeState, [opts])
 Instantiates a µPort identity from its serialized state.
 
 
@@ -53,7 +53,7 @@ Instantiates a µPort identity from its serialized state.
 
 <a name="MuPort+helpRecover"></a>
 
-#### muPort.helpRecover(did) ⇒ <code>Promise.&lt;String, Error&gt;</code>
+### muPort.helpRecover(did) ⇒ <code>Promise.&lt;String, Error&gt;</code>
 Help another identity recover. Returns a decrypted share if the current identity is a delegate
 returns undefined otherwise
 
@@ -66,7 +66,7 @@ returns undefined otherwise
 
 <a name="MuPort+getDid"></a>
 
-#### muPort.getDid() ⇒ <code>String</code>
+### muPort.getDid() ⇒ <code>String</code>
 The DID is the identifier of the identity. This is a unique string that can be used to
 look up information about the identity.
 
@@ -74,21 +74,21 @@ look up information about the identity.
 **Returns**: <code>String</code> - the DID  
 <a name="MuPort+getDidDocument"></a>
 
-#### muPort.getDidDocument() ⇒ <code>Object</code>
+### muPort.getDidDocument() ⇒ <code>Object</code>
 The DID Document is a json object that contains information such as public keys
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
 **Returns**: <code>Object</code> - the DID Document  
 <a name="MuPort+getRecoveryDelegateDids"></a>
 
-#### muPort.getRecoveryDelegateDids() ⇒ <code>Array.&lt;String&gt;</code>
+### muPort.getRecoveryDelegateDids() ⇒ <code>Array.&lt;String&gt;</code>
 The recovery delegates that can help this identity recover
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
 **Returns**: <code>Array.&lt;String&gt;</code> - an array containing the DIDs of the delegates  
 <a name="MuPort+updateDelegates"></a>
 
-#### muPort.updateDelegates(delegateDids) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
+### muPort.updateDelegates(delegateDids) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
 This function is used to update the recoveryNetwork of the identity. The returned object
 has three properties; `address` an ethereum address, `costInEther` a number, and
 `finishUpdate` a function.
@@ -107,14 +107,14 @@ will throw an error if there is to little ether in the `address`.
 
 <a name="MuPort+signJWT"></a>
 
-#### muPort.signJWT() ⇒ <code>Promise.&lt;String, Error&gt;</code>
+### muPort.signJWT() ⇒ <code>Promise.&lt;String, Error&gt;</code>
 Signs the given payload (claim) and return a promis with the JWT.
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
 **Returns**: <code>Promise.&lt;String, Error&gt;</code> - a promise that resolves to a JWT  
 <a name="MuPort+verifyJWT"></a>
 
-#### muPort.verifyJWT(jwt, audience) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
+### muPort.verifyJWT(jwt, audience) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
 Verifies a JWT.
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
@@ -127,14 +127,14 @@ Verifies a JWT.
 
 <a name="MuPort+serializeState"></a>
 
-#### muPort.serializeState() ⇒ <code>String</code>
+### muPort.serializeState() ⇒ <code>String</code>
 Serialize the state of the current identity to be able to reconstruct it later.
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
 **Returns**: <code>String</code> - the serialized state  
 <a name="MuPort.newIdentity"></a>
 
-#### MuPort.newIdentity(name, delegateDids, [opts]) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
+### MuPort.newIdentity(name, delegateDids, [opts]) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
 Creates a new µPort identity.
 
 **Kind**: static method of [<code>MuPort</code>](#MuPort)  
@@ -150,7 +150,7 @@ Creates a new µPort identity.
 
 <a name="MuPort.recoverIdentity"></a>
 
-#### MuPort.recoverIdentity(did, shares, [opts]) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
+### MuPort.recoverIdentity(did, shares, [opts]) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
 Recovers a µPort identity.
 
 **Kind**: static method of [<code>MuPort</code>](#MuPort)  
@@ -166,7 +166,7 @@ Recovers a µPort identity.
 
 <a name="MuPort.resolveIdentityDocument"></a>
 
-#### MuPort.resolveIdentityDocument(did, [opts]) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
+### MuPort.resolveIdentityDocument(did, [opts]) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
 Resovles the identity document for the given DID.
 
 **Kind**: static method of [<code>MuPort</code>](#MuPort)  
