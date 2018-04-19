@@ -114,7 +114,7 @@ class MuPort {
     const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did)).asymEncryptionKey))
     this.document.recoveryNetwork = await this.keyring.createShares(delegateDids, didsPublicKeys)
     // save guardians
-    this.document.symEncryptedData = delegateDids.map((did) => this.keyring.symEncrypt(didToBuffer(did)))
+    this.document.symEncryptedData.symEncDids = delegateDids.map((did) => this.keyring.symEncrypt(didToBuffer(did)))
     this.documentHash = await ipfs.addJSONAsync(this.document)
     // prepare ethereum tx
     const address = this.keyring.getManagementAddress()
