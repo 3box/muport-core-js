@@ -54,6 +54,8 @@ describe('MuPort', () => {
     await deploy(deployData.RevokeAndPublish)
     const EthereumClaimsRegistry = web3.eth.contract(EthereumClaimsRegistryAbi)
     claimsReg = promisifyAll(EthereumClaimsRegistry.at(deployData.EthereumClaimsRegistry.contractAddress))
+
+    jest.setTimeout(10000)
   })
 
   it('create an identity correctly', async () => {

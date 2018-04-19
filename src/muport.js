@@ -112,11 +112,11 @@ class MuPort {
     if (delegateDids.length !== 3) throw new Error('Must provide exactly 3 DIDs')
     // generate new recoveryNetwork
     const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did)).asymEncryptionKey))
-    const recoveryNetwork = await this.keyring.createShares(delegateDids, didsPublicKeys)
-
-    this.document.recoveryNetwork = recoveryNetwork
+    this.document.recoveryNetwork = await this.keyring.createShares(delegateDids, didsPublicKeys)
+    // save guardians
+    this.document.symEncryptedData = delegateDids.map((did) => this.keyring.symEncrypt(didToBuffer(did)))
     this.documentHash = await ipfs.addJSONAsync(this.document)
-
+    // prepare ethereum tx
     const address = this.keyring.getManagementAddress()
     const txParams = await this.ethUtils.createPublishTxParams(this.documentHash, address)
     const costInEther = this.ethUtils.calculateTxCost(txParams)
