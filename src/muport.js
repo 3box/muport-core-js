@@ -130,9 +130,13 @@ class MuPort {
       costInEther,
       finishUpdate: async () => {
         const txHash = await this.ethUtils.sendRawTx(signedTx)
-        await this.ethUtils.waitForTx(txHash)
-        this.document = newDocument
-        this.documentHash = newDocumentHash
+        try {
+          await this.ethUtils.waitForTx(txHash)
+          this.document = newDocument
+          this.documentHash = newDocumentHash
+        } catch (e) {
+          throw new Error('There was a problem with sending the transaction' + e)
+        }
       }
     }
   }
