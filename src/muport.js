@@ -126,7 +126,8 @@ class MuPort {
       address,
       costInEther,
       finishUpdate: async () => {
-        await this.ethUtils.sendRawTx(signedTx)
+        const txHash = await this.ethUtils.sendRawTx(signedTx)
+        console.log(txHash)
       }
     }
   }

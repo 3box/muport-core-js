@@ -109,8 +109,7 @@ describe('MuPort', () => {
     const updateData = await id1.updateDelegates([id4.getDid(), id2.getDid(), id3.getDid()])
 
     await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
-    let tx = await updateData.finishUpdate()
-    console.log(tx)
+    await updateData.finishUpdate()
 
     let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
     let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
