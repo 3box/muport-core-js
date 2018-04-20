@@ -43,7 +43,7 @@ describe('MuPort', () => {
     const EthereumClaimsRegistry = web3.eth.contract(EthereumClaimsRegistryAbi)
     claimsReg = promisifyAll(EthereumClaimsRegistry.at(deployData.EthereumClaimsRegistry.contractAddress))
 
-    jest.setTimeout(10000)
+    jest.setTimeout(15000)
   })
 
   it('create an identity correctly', async () => {
@@ -94,6 +94,10 @@ describe('MuPort', () => {
       threwError = true
     }
     assert.isTrue(threwError, 'finishUpdate should throw if no funds in managementAddress')
+
+    let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
+    assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should not be updated yet')
+
     await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
     await updateData.finishUpdate()
 
@@ -101,7 +105,7 @@ describe('MuPort', () => {
     let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
     assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
 
-    let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
+    lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
   })
 

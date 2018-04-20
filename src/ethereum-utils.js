@@ -39,6 +39,11 @@ class EthereumUtils {
   async sendRawTx (rawTx) {
     return this.provider.sendTransaction(rawTx)
   }
+
+  async waitForTx (txHash) {
+    // sets the timeout to one minute
+    return this.provider.waitForTransaction(txHash, 60000)
+  }
 }
 
 const encodeIpfsHash = (hash) => {
