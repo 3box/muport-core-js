@@ -1,7 +1,7 @@
 const coder = require('web3/lib/solidity/coder')
 var CryptoJS = require('crypto-js')
 const bs58 = require('bs58')
-const Web3 = require('web3')
+const ethers = require('ethers')
 const promisifyAll = require('bluebird').promisifyAll
 const RevokeAndPublishArtifact = require('ethereum-claims-registry').applications.RevokeAndPublish
 const RevokeAndPublishAbi = RevokeAndPublishArtifact.abi
@@ -13,15 +13,14 @@ const claimKey = 'muPortDocumentIPFS1220'
 class EthereumUtils {
 
   constructor (providerUrl) {
-    this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl || PROVIDER_URL))
-    this.web3.eth = promisifyAll(this.web3.eth)
+    this.provider = new ethers.providers.JsonRpcProvider(providerUrl || PROVIDER_URL)
   }
 
   async createPublishTxParams (ipfsHash, managementAddress) {
     const encodedHash = encodeIpfsHash(ipfsHash)
     const data = encodeMethodCall('publish', [managementAddress, claimKey, encodedHash])
-    const nonce = await this.web3.eth.getTransactionCountAsync(managementAddress)
-    const gasPrice = (await this.web3.eth.getGasPriceAsync()).toNumber()
+    const nonce = await this.provider.getTransactionCount(managementAddress)
+    const gasPrice = (await this.provider.getGasPrice()).toNumber()
     const txParams = {
       nonce,
       gasPrice,
@@ -29,16 +28,21 @@ class EthereumUtils {
       data,
     }
     // we need to add 500 as a gas buffer
-    txParams.gasLimit = (await this.web3.eth.estimateGasAsync({...txParams, from: managementAddress})) + 500
+    txParams.gasLimit = (await this.provider.estimateGas({...txParams, from: managementAddress})).toNumber() + 500
     return txParams
   }
 
   calculateTxCost (txParams) {
-    return this.web3.fromWei(txParams.gasPrice * txParams.gasLimit, 'ether')
+    return ethers.utils.formatUnits(txParams.gasPrice * txParams.gasLimit, 'ether')
   }
 
   async sendRawTx (rawTx) {
-    await this.web3.eth.sendRawTransactionAsync(rawTx)
+    return this.provider.sendTransaction(rawTx)
+  }
+
+  async waitForTx (txHash) {
+    // sets the timeout to one minute
+    return this.provider.waitForTransaction(txHash, 60000)
   }
 }
 

@@ -87,7 +87,7 @@ class MuPort {
   getRecoveryDelegateDids () {
     const toBuffer = true
     let dids = []
-    if (this.document.symEncryptedData.symEncDids != undefined){
+    if (this.document.symEncryptedData && this.document.symEncryptedData.symEncDids){
       dids = this.document.symEncryptedData.symEncDids.map(
         (encDid) => bufferToDid(this.keyring.symDecrypt(encDid.ciphertext, encDid.nonce, toBuffer))
       )
@@ -112,13 +112,16 @@ class MuPort {
     if (delegateDids.length !== 3) throw new Error('Must provide exactly 3 DIDs')
     // generate new recoveryNetwork
     const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did)).asymEncryptionKey))
-    this.document.recoveryNetwork = await this.keyring.createShares(delegateDids, didsPublicKeys)
+    // seems like the best way to do a deep clone
+    const newDocument = JSON.parse(JSON.stringify(this.document))
+    newDocument.recoveryNetwork = await this.keyring.createShares(delegateDids, didsPublicKeys)
     // save guardians
-    this.document.symEncryptedData.symEncDids = delegateDids.map((did) => this.keyring.symEncrypt(didToBuffer(did)))
-    this.documentHash = await ipfs.addJSONAsync(this.document)
+    newDocument.symEncryptedData = newDocument.symEncryptedData || {}
+    newDocument.symEncryptedData.symEncDids = delegateDids.map((did) => this.keyring.symEncrypt(didToBuffer(did)))
+    let newDocumentHash = await ipfs.addJSONAsync(newDocument)
     // prepare ethereum tx
     const address = this.keyring.getManagementAddress()
-    const txParams = await this.ethUtils.createPublishTxParams(this.documentHash, address)
+    const txParams = await this.ethUtils.createPublishTxParams(newDocumentHash, address)
     const costInEther = this.ethUtils.calculateTxCost(txParams)
     const signedTx = this.keyring.signManagementTx(txParams)
 
@@ -126,7 +129,14 @@ class MuPort {
       address,
       costInEther,
       finishUpdate: async () => {
-        await this.ethUtils.sendRawTx(signedTx)
+        const txHash = await this.ethUtils.sendRawTx(signedTx)
+        try {
+          await this.ethUtils.waitForTx(txHash)
+          this.document = newDocument
+          this.documentHash = newDocumentHash
+        } catch (e) {
+          throw new Error('There was a problem with sending the transaction' + e)
+        }
       }
     }
   }
@@ -185,17 +195,17 @@ class MuPort {
     const publicProfile = { name }
     const keyring = new Keyring()
     let recoveryNetwork
-    let symEncryptedDelegateDids
+    let symEncryptedData
     if (delegateDids) {
       const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did, opts)).asymEncryptionKey))
       recoveryNetwork = await keyring.createShares(delegateDids, didsPublicKeys)
 
-      symEncryptedDelegateDids = delegateDids.map((did) => keyring.symEncrypt(didToBuffer(did)))
-
+      let symEncryptedDelegateDids = delegateDids.map((did) => keyring.symEncrypt(didToBuffer(did)))
+      symEncryptedData = {symEncDids: symEncryptedDelegateDids}
     }
     const publicKeys = keyring.getPublicKeys()
 
-    const doc = createMuportDocument(publicKeys, recoveryNetwork, publicProfile, {symEncDids: symEncryptedDelegateDids})
+    const doc = createMuportDocument(publicKeys, recoveryNetwork, publicProfile, symEncryptedData)
     const docHash = await ipfs.addJSONAsync(doc)
     const did = 'did:muport:' + docHash
 
