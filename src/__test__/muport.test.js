@@ -5,28 +5,16 @@ const EthereumClaimsRegistryAbi = require('ethereum-claims-registry').registry.a
 const Web3 = require('web3')
 const promisifyAll = require('bluebird').promisifyAll
 let IPFS = require('ipfs-mini')
+let ipfsDataStore = {}
 IPFS.prototype.catJSON = (hash, cb) => {
-  let doc
-  switch (hash) {
-    case 'QmZZBBKPS2NWc6PMZbUk9zUHCo1SHKzQPPX4ndfwaYzmP1':
-      doc = id1.getDidDocument()
-      break
-    case 'QmZZBBKPS2NWc6PMZbUk9zUHCo1SHKzQPPX4ndfwaYzmP2':
-      doc = id2.getDidDocument()
-      break
-    case 'QmZZBBKPS2NWc6PMZbUk9zUHCo1SHKzQPPX4ndfwaYzmP3':
-      doc = id3.getDidDocument()
-      break
-    case 'QmZZBBKPS2NWc6PMZbUk9zUHCo1SHKzQPPX4ndfwaYzmP4':
-      doc = id4.getDidDocument()
-      break
-  }
-  cb(null, doc)
+  cb(null, ipfsDataStore[hash])
 }
 let num = 1
 IPFS.prototype.addJSON = (json, cb) => {
   // fake ipfs hash
-  cb(null, 'QmZZBBKPS2NWc6PMZbUk9zUHCo1SHKzQPPX4ndfwaYzmP' + num++)
+  const hash = 'QmZZBBKPS2NWc6PMZbUk9zUHCo1SHKzQPPX4ndfwaYzmP' + num++
+  ipfsDataStore[hash] = json
+  cb(null, hash)
 }
 const RPC_PROV_URL = 'http://localhost:8555'
 const deployData = require('./deployData.json')
@@ -113,7 +101,7 @@ describe('MuPort', () => {
     let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
     assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
 
-    let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid())
+    let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
   })
 
@@ -121,13 +109,14 @@ describe('MuPort', () => {
     const updateData = await id1.updateDelegates([id4.getDid(), id2.getDid(), id3.getDid()])
 
     await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
-    await updateData.finishUpdate()
+    let tx = await updateData.finishUpdate()
+    console.log(tx)
 
     let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
     let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
     assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
 
-    let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid())
+    let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
   })
 

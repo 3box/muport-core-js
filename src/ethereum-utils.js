@@ -38,7 +38,7 @@ class EthereumUtils {
   }
 
   async sendRawTx (rawTx) {
-    await this.web3.eth.sendRawTransactionAsync(rawTx)
+    return await this.web3.eth.sendRawTransactionAsync(rawTx)
   }
 }
 
