@@ -148,6 +148,7 @@ Creates a new µPort identity.
 | publicProfile | <code>Object</code> | a public profile for the new identity |
 | delegateDids | <code>Array.&lt;String&gt;</code> | three DIDs that can be used to recover the identity at a later point (optional) |
 | [opts] | <code>Object</code> | optional parameters |
+| opts.externalMgmtKey | <code>String</code> | an ethereum address to be used as an external managementKey |
 | opts.ipfsConf | <code>Object</code> | configuration options for ipfs-mini |
 | opts.rpcProviderUrl | <code>String</code> | rpc url to a custom ethereum node |
 

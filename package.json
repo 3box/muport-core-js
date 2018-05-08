@@ -35,7 +35,7 @@
     "ethers": "^3.0.15",
     "ethjs-abi": "^0.2.1",
     "ipfs-mini": "^1.1.2",
-    "muport-did-resolver": "^0.0.7-beta",
+    "muport-did-resolver": "^0.0.7-beta-12",
     "secrets.js": "^0.1.8",
     "tweetnacl": "^1.0.0",
     "tweetnacl-util": "^0.15.0",

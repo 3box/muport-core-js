@@ -23,6 +23,8 @@ let id1
 let id2
 let id3
 let id4
+let id5
+let id5externalMgmtKey
 
 describe('MuPort', () => {
 
@@ -33,7 +35,7 @@ describe('MuPort', () => {
   let claimsReg
 
   beforeAll(async () => {
-    server = promisifyAll(ganache.server({unlocked_accounts: [0]}))
+    server = promisifyAll(ganache.server())
     await server.listenAsync(8555)
     web3 = new Web3(server.provider)
     web3.eth = promisifyAll(web3.eth)
@@ -66,6 +68,15 @@ describe('MuPort', () => {
     recoveredId4 = await MuPort.recoverIdentity(didOfLostId, [share2, share3])
 
     assert.deepEqual(recoveredId4.serializeState(), id4.serializeState())
+  })
+
+  it('create an identity with externalMgmtKey correctly', async () => {
+    id5externalMgmtKey = accounts[1]
+    id5 = await MuPort.newIdentity({name: 'id5'}, null, {externalMgmtKey: id5externalMgmtKey, rpcProviderUrl: RPC_PROV_URL})
+    const serialized = id5.serializeState()
+
+    const tmpId = new MuPort(serialized)
+    assert.deepEqual(tmpId.serializeState(), serialized)
   })
 
   it('returns the delegate DIDs correctly', async () => {
@@ -117,6 +128,31 @@ describe('MuPort', () => {
 
     lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
+  })
+
+  it('updating publicProfile with externalMgmtKey works as intended', async () => {
+    const updateData = await id5.updateIdentity({name: 'id5 newname'})
+
+    let threwError = false
+    try {
+      await updateData.finishUpdate()
+    } catch (e) {
+      threwError = true
+    }
+    assert.isTrue(threwError, 'finishUpdate should throw if no funds in managementAddress')
+
+    let lookedUpDoc = await MuPort.resolveIdentityDocument(id5.getDid(), {rpcProviderUrl: RPC_PROV_URL})
+    assert.deepEqual(lookedUpDoc, id5.document, 'looked up document should not be updated yet')
+
+    const txHash = await web3.eth.sendTransactionAsync({ ...updateData.txParams, from: id5externalMgmtKey})
+    await updateData.finishUpdate(txHash)
+
+    let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
+    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
+    assert.equal(hash, id5.documentHash, 'hash in registry should be the same as in muport ID')
+
+    lookedUpDoc = await MuPort.resolveIdentityDocument(id5.getDid(), {rpcProviderUrl: RPC_PROV_URL})
+    assert.deepEqual(lookedUpDoc, id5.document, 'looked up document should be the same as in muport ID')
   })
 
   it('updating delegates works as intended', async () => {

@@ -132,13 +132,14 @@ class MuPort {
     const address = this.keyring.getManagementAddress()
     const txParams = await this.ethUtils.createPublishTxParams(newDocumentHash, address)
     const costInEther = this.ethUtils.calculateTxCost(txParams)
-    const signedTx = this.keyring.signManagementTx(txParams)
+    const signedTx = this.keyring.externalMgmtKey ? null : this.keyring.signManagementTx(txParams)
 
     return {
+      txParams,
       address,
       costInEther,
-      finishUpdate: async () => {
-        const txHash = await this.ethUtils.sendRawTx(signedTx)
+      finishUpdate: async txHash => {
+        txHash = txHash || await this.ethUtils.sendRawTx(signedTx)
         try {
           await this.ethUtils.waitForTx(txHash)
           this.document = newDocument
@@ -195,13 +196,14 @@ class MuPort {
    * @param     {Object}            publicProfile           a public profile for the new identity
    * @param     {Array<String>}     delegateDids            three DIDs that can be used to recover the identity at a later point (optional)
    * @param     {Object}            [opts]                  optional parameters
+   * @param     {String}            opts.externalMgmtKey    an ethereum address to be used as an external managementKey
    * @param     {Object}            opts.ipfsConf           configuration options for ipfs-mini
    * @param     {String}            opts.rpcProviderUrl     rpc url to a custom ethereum node
    * @return    {Promise<MuPort, Error>}                    a promise that resolves to an instance of the MuPort class
    */
   static async newIdentity (publicProfile, delegateDids, opts = {}) {
     initIpfs(opts.ipfsConf)
-    const keyring = new Keyring()
+    const keyring = new Keyring(opts)
     let recoveryNetwork
     let symEncryptedData
     if (delegateDids) {
@@ -262,9 +264,10 @@ class MuPort {
       registerMuportResolver({ ipfsConf: opts.ipfsConf, rpcProviderUrl: opts.rpcProviderUrl })
     }
     const didDoc = await resolve(did)
+    const managementKeyStruct = didDoc.publicKey.find(key => (key.id.indexOf('#managementKey') !== -1))
     const publicKeys = {
       signingKey: didDoc.publicKey.find(key => (key.id.indexOf('#signingKey') !== -1)).publicKeyHex,
-      managementKey: didDoc.publicKey.find(key => (key.id.indexOf('#managementKey') !== -1)).publicKeyHex,
+      managementKey: managementKeyStruct.publicKeyHex || managementKeyStruct.ethereumAddress,
       asymEncryptionKey: didDoc.publicKey.find(key => (key.id.indexOf('#encryptionKey') !== -1)).publicKeyBase64
     }
     const recoveryNetwork = didDoc.muportData.recoveryNetwork
