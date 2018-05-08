@@ -47,7 +47,7 @@ describe('MuPort', () => {
   })
 
   it('create an identity correctly', async () => {
-    id1 = await MuPort.newIdentity('lala', null, {rpcProviderUrl: RPC_PROV_URL})
+    id1 = await MuPort.newIdentity({name: 'lala'}, null, {rpcProviderUrl: RPC_PROV_URL})
     const serialized = id1.serializeState()
 
     const tmpId = new MuPort(serialized)
@@ -55,10 +55,10 @@ describe('MuPort', () => {
   })
 
   it('recover identity correctly', async () => {
-    id2 = await MuPort.newIdentity('id2')
-    id3 = await MuPort.newIdentity('id3')
+    id2 = await MuPort.newIdentity({name: 'id2'})
+    id3 = await MuPort.newIdentity({name: 'id3'})
     // get dids from three identities and pass them along the identity creation process
-    id4 = await MuPort.newIdentity('id4', [id1.getDid(), id2.getDid(), id3.getDid()])
+    id4 = await MuPort.newIdentity({name: 'id4'}, [id1.getDid(), id2.getDid(), id3.getDid()])
 
     const didOfLostId = id4.getDid()
     const share2 = await id2.helpRecover(didOfLostId)
@@ -84,8 +84,18 @@ describe('MuPort', () => {
     assert.deepEqual(didsFromRecovered, [id1.getDid(), id2.getDid(), id3.getDid()])
   })
 
-  it('updateDelegates works as intended', async () => {
-    const updateData = await id1.updateDelegates([id2.getDid(), id3.getDid(), id4.getDid()])
+  it('updateIdentity should throw without data', async () => {
+    let threwError = false
+    try {
+      await id1.updateIdentity(null, null)
+    } catch (e) {
+      threwError = true
+    }
+    assert.isTrue(threwError, 'should have thrown')
+  })
+
+  it('updating publicProfile works as intended', async () => {
+    const updateData = await id1.updateIdentity({name: 'id1 newname'})
 
     let threwError = false
     try {
@@ -109,8 +119,33 @@ describe('MuPort', () => {
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
   })
 
-  it('updateDelegates second time works as intended', async () => {
-    const updateData = await id1.updateDelegates([id4.getDid(), id2.getDid(), id3.getDid()])
+  it('updating delegates works as intended', async () => {
+    const updateData = await id1.updateIdentity(null, [id2.getDid(), id3.getDid(), id4.getDid()])
+
+    let threwError = false
+    try {
+      await updateData.finishUpdate()
+    } catch (e) {
+      threwError = true
+    }
+    assert.isTrue(threwError, 'finishUpdate should throw if no funds in managementAddress')
+
+    let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
+    assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should not be updated yet')
+
+    await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
+    await updateData.finishUpdate()
+
+    let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
+    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
+    assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
+
+    lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
+    assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
+  })
+
+  it('updating delegates a second time works as intended', async () => {
+    const updateData = await id1.updateIdentity(null, [id4.getDid(), id2.getDid(), id3.getDid()])
 
     await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
     await updateData.finishUpdate()
