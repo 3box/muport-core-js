@@ -271,7 +271,7 @@ class MuPort {
       asymEncryptionKey: didDoc.publicKey.find(key => (key.id.indexOf('#encryptionKey') !== -1)).publicKeyBase64
     }
     const recoveryNetwork = didDoc.muportData.recoveryNetwork
-    const publicProfile = didDoc.muportData.publicProfile
+    const publicProfile = didDoc.uportProfile
     const symEncryptedData = didDoc.muportData.symEncryptedData
     return createMuportDocument(publicKeys, recoveryNetwork, publicProfile, symEncryptedData)
   }
