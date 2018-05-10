@@ -96,40 +96,50 @@ class MuPort {
   }
 
   /**
-   * This function is used to update the recoveryNetwork of the identity. The returned object
-   * has three properties; `address` an ethereum address, `costInEther` a number, and
-   * `finishUpdate` a function.
+   * This function is used to update the publicProfile and/or the recoveryNetwork of the identity.
+   * The returned object has three properties; `address` an ethereum address, `costInEther` a number,
+   * and `finishUpdate` a function.
    * In order to complete the update of the delegates you have to
    * send `costInEther` ether to the `address` on mainnet (or other network if you are using
    * a custom config). Once that is done the `finishUpdate` function can be called. This
    * function sends a transaction to the network that updates the identity. The function
    * will throw an error if there is to little ether in the `address`.
+   * Both publicProfile and delegateDids are optional and you may pass null if you don't wish to
+   * update one of them.
    *
-   * @param     {Array<String>}     delegateDids    an array containing the 3 DIDs of the new delegates
-   * @return    {Promise<Object, Error>}            an object with the data needed to finalize the update
+   * @param     {Object}            publicProfile       a new public profile for the identity
+   * @param     {Array<String>}     delegateDids        an array containing the 3 DIDs of the new delegates
+   * @return    {Promise<Object, Error>}                an object with the data needed to finalize the update
    */
-  async updateDelegates (delegateDids) {
-    if (delegateDids.length !== 3) throw new Error('Must provide exactly 3 DIDs')
-    // generate new recoveryNetwork
-    const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did)).asymEncryptionKey))
-    // seems like the best way to do a deep clone
-    const newDocument = JSON.parse(JSON.stringify(this.document))
-    newDocument.recoveryNetwork = await this.keyring.createShares(delegateDids, didsPublicKeys)
-    // save guardians
-    newDocument.symEncryptedData = newDocument.symEncryptedData || {}
-    newDocument.symEncryptedData.symEncDids = delegateDids.map((did) => this.keyring.symEncrypt(didToBuffer(did)))
+  async updateIdentity (publicProfile, delegateDids) {
+    if (!publicProfile && ! delegateDids) throw new Error('publicProfile or delegateDids has to be set')
+    let newDocument = JSON.parse(JSON.stringify(this.document))
+    if (publicProfile) {
+      newDocument.publicProfile = publicProfile
+    }
+    if (delegateDids) {
+      if (delegateDids.length !== 3) throw new Error('Must provide exactly 3 DIDs')
+      // generate new recoveryNetwork
+      const didsPublicKeys = await Promise.all(delegateDids.map(async did => (await MuPort.resolveIdentityDocument(did)).asymEncryptionKey))
+      // seems like the best way to do a deep clone
+      newDocument.recoveryNetwork = await this.keyring.createShares(delegateDids, didsPublicKeys)
+      // save guardians
+      newDocument.symEncryptedData = newDocument.symEncryptedData || {}
+      newDocument.symEncryptedData.symEncDids = delegateDids.map((did) => this.keyring.symEncrypt(didToBuffer(did)))
+    }
     let newDocumentHash = await ipfs.addJSONAsync(newDocument)
     // prepare ethereum tx
     const address = this.keyring.getManagementAddress()
     const txParams = await this.ethUtils.createPublishTxParams(newDocumentHash, address)
     const costInEther = this.ethUtils.calculateTxCost(txParams)
-    const signedTx = this.keyring.signManagementTx(txParams)
+    const signedTx = this.keyring.externalMgmtKey ? null : this.keyring.signManagementTx(txParams)
 
     return {
+      txParams,
       address,
       costInEther,
-      finishUpdate: async () => {
-        const txHash = await this.ethUtils.sendRawTx(signedTx)
+      finishUpdate: async txHash => {
+        txHash = txHash || await this.ethUtils.sendRawTx(signedTx)
         try {
           await this.ethUtils.waitForTx(txHash)
           this.document = newDocument
@@ -183,17 +193,17 @@ class MuPort {
   /**
    * Creates a new µPort identity.
    *
-   * @param     {String}            name                    a name for the new identity
+   * @param     {Object}            publicProfile           a public profile for the new identity
    * @param     {Array<String>}     delegateDids            three DIDs that can be used to recover the identity at a later point (optional)
    * @param     {Object}            [opts]                  optional parameters
+   * @param     {String}            opts.externalMgmtKey    an ethereum address to be used as an external managementKey
    * @param     {Object}            opts.ipfsConf           configuration options for ipfs-mini
    * @param     {String}            opts.rpcProviderUrl     rpc url to a custom ethereum node
    * @return    {Promise<MuPort, Error>}                    a promise that resolves to an instance of the MuPort class
    */
-  static async newIdentity (name, delegateDids, opts = {}) {
+  static async newIdentity (publicProfile, delegateDids, opts = {}) {
     initIpfs(opts.ipfsConf)
-    const publicProfile = { name }
-    const keyring = new Keyring()
+    const keyring = new Keyring(opts)
     let recoveryNetwork
     let symEncryptedData
     if (delegateDids) {
@@ -254,15 +264,14 @@ class MuPort {
       registerMuportResolver({ ipfsConf: opts.ipfsConf, rpcProviderUrl: opts.rpcProviderUrl })
     }
     const didDoc = await resolve(did)
+    const managementKeyStruct = didDoc.publicKey.find(key => (key.id.indexOf('#managementKey') !== -1))
     const publicKeys = {
       signingKey: didDoc.publicKey.find(key => (key.id.indexOf('#signingKey') !== -1)).publicKeyHex,
-      managementKey: didDoc.publicKey.find(key => (key.id.indexOf('#managementKey') !== -1)).publicKeyHex,
+      managementKey: managementKeyStruct.publicKeyHex || managementKeyStruct.ethereumAddress,
       asymEncryptionKey: didDoc.publicKey.find(key => (key.id.indexOf('#encryptionKey') !== -1)).publicKeyBase64
     }
     const recoveryNetwork = didDoc.muportData.recoveryNetwork
-    const publicProfile = {
-      name: didDoc.muportData.nym
-    }
+    const publicProfile = didDoc.uportProfile
     const symEncryptedData = didDoc.muportData.symEncryptedData
     return createMuportDocument(publicKeys, recoveryNetwork, publicProfile, symEncryptedData)
   }

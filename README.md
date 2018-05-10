@@ -29,12 +29,12 @@ help other identities recover.
         * [.getDid()](#MuPort+getDid) ⇒ <code>String</code>
         * [.getDidDocument()](#MuPort+getDidDocument) ⇒ <code>Object</code>
         * [.getRecoveryDelegateDids()](#MuPort+getRecoveryDelegateDids) ⇒ <code>Array.&lt;String&gt;</code>
-        * [.updateDelegates(delegateDids)](#MuPort+updateDelegates) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
+        * [.updateIdentity(publicProfile, delegateDids)](#MuPort+updateIdentity) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
         * [.signJWT()](#MuPort+signJWT) ⇒ <code>Promise.&lt;String, Error&gt;</code>
         * [.verifyJWT(jwt, audience)](#MuPort+verifyJWT) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
         * [.serializeState()](#MuPort+serializeState) ⇒ <code>String</code>
     * _static_
-        * [.newIdentity(name, delegateDids, [opts])](#MuPort.newIdentity) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
+        * [.newIdentity(publicProfile, delegateDids, [opts])](#MuPort.newIdentity) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
         * [.recoverIdentity(did, shares, [opts])](#MuPort.recoverIdentity) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
         * [.resolveIdentityDocument(did, [opts])](#MuPort.resolveIdentityDocument) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
 
@@ -86,23 +86,26 @@ The recovery delegates that can help this identity recover
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
 **Returns**: <code>Array.&lt;String&gt;</code> - an array containing the DIDs of the delegates  
-<a name="MuPort+updateDelegates"></a>
+<a name="MuPort+updateIdentity"></a>
 
-### muPort.updateDelegates(delegateDids) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
-This function is used to update the recoveryNetwork of the identity. The returned object
-has three properties; `address` an ethereum address, `costInEther` a number, and
-`finishUpdate` a function.
+### muPort.updateIdentity(publicProfile, delegateDids) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
+This function is used to update the publicProfile and/or the recoveryNetwork of the identity.
+The returned object has three properties; `address` an ethereum address, `costInEther` a number,
+and `finishUpdate` a function.
 In order to complete the update of the delegates you have to
 send `costInEther` ether to the `address` on mainnet (or other network if you are using
 a custom config). Once that is done the `finishUpdate` function can be called. This
 function sends a transaction to the network that updates the identity. The function
 will throw an error if there is to little ether in the `address`.
+Both publicProfile and delegateDids are optional and you may pass null if you don't wish to
+update one of them.
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
 **Returns**: <code>Promise.&lt;Object, Error&gt;</code> - an object with the data needed to finalize the update  
 
 | Param | Type | Description |
 | --- | --- | --- |
+| publicProfile | <code>Object</code> | a new public profile for the identity |
 | delegateDids | <code>Array.&lt;String&gt;</code> | an array containing the 3 DIDs of the new delegates |
 
 <a name="MuPort+signJWT"></a>
@@ -134,7 +137,7 @@ Serialize the state of the current identity to be able to reconstruct it later.
 **Returns**: <code>String</code> - the serialized state  
 <a name="MuPort.newIdentity"></a>
 
-### MuPort.newIdentity(name, delegateDids, [opts]) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
+### MuPort.newIdentity(publicProfile, delegateDids, [opts]) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
 Creates a new µPort identity.
 
 **Kind**: static method of [<code>MuPort</code>](#MuPort)  
@@ -142,9 +145,10 @@ Creates a new µPort identity.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| name | <code>String</code> | a name for the new identity |
+| publicProfile | <code>Object</code> | a public profile for the new identity |
 | delegateDids | <code>Array.&lt;String&gt;</code> | three DIDs that can be used to recover the identity at a later point (optional) |
 | [opts] | <code>Object</code> | optional parameters |
+| opts.externalMgmtKey | <code>String</code> | an ethereum address to be used as an external managementKey |
 | opts.ipfsConf | <code>Object</code> | configuration options for ipfs-mini |
 | opts.rpcProviderUrl | <code>String</code> | rpc url to a custom ethereum node |
 

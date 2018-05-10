@@ -36,6 +36,29 @@ describe('Keyring', () => {
     assert.deepEqual((await keyring1.getJWTSigner()('asdf')), signedData)
   })
 
+  it('handles externalMgmtKey correctly', async () => {
+    const external = '0xf3beac30c498d9e26865f34fcaa57dbb935b0d74'
+    const keyring = new Keyring({externalMgmtKey: external})
+
+    const address = keyring.getManagementAddress()
+    assert.deepEqual(address, external)
+    assert.deepEqual(keyring.getPublicKeys().managementKey, external)
+
+    // serialize and deserialize correctly
+    const serialized = keyring.serialize()
+    const keyringCopy = new Keyring(serialized)
+    assert.deepEqual(keyringCopy.serialize(), serialized)
+
+    // should throw if signManagementTx is called
+    let threwError = false
+    try {
+      keyring.signManagementTx()
+    } catch (e) {
+      threwError = true
+    }
+    assert.isTrue(threwError)
+  })
+
   it('encrypts and decrypts correctly', () => {
     const testMsg = "Very secret test message"
     let box = keyring1.encrypt(testMsg, keyring2.getPublicKeys().asymEncryptionKey)

@@ -14,8 +14,8 @@ const MM_PATH = "m/44'/60'/0'/0"
 class Keyring {
 
   constructor (opts = {}) {
-    const mnemonic = opts.mnemonic || bip39.generateMnemonic()
-    this._initKeysFromMnemonic(mnemonic)
+    opts.mnemonic = opts.mnemonic || bip39.generateMnemonic()
+    this._initKeys(opts)
   }
 
   async createShares (dids, publicKeys) {
@@ -90,6 +90,7 @@ class Keyring {
   }
 
   signManagementTx (txParams) {
+    if (this.externalMgmtKey) throw new Error('Can not sign transaction if externalMgmtKey is set')
     const privKey = this.managementKey.getWallet().getPrivateKey()
     let tx = new Tx(txParams)
     tx.sign(privKey)
@@ -97,22 +98,30 @@ class Keyring {
   }
 
   getManagementAddress () {
+    if (this.externalMgmtKey) {
+      return this.managementKey
+    }
     return this.managementKey.getWallet().getChecksumAddressString()
   }
 
   getPublicKeys () {
     return {
       signingKey: this.signingKey._hdkey._publicKey.toString('hex'),
-      managementKey: this.managementKey._hdkey._publicKey.toString('hex'),
+      managementKey: this.externalMgmtKey ? this.managementKey
+        : this.managementKey._hdkey._publicKey.toString('hex'),
       asymEncryptionKey: nacl.util.encodeBase64(this.asymEncryptionKey.publicKey)
     }
   }
 
   serialize () {
-    return { mnemonic: this.mnemonic }
+    let obj = { mnemonic: this.mnemonic }
+    if (this.externalMgmtKey) {
+      obj.externalMgmtKey = this.managementKey
+    }
+    return obj
   }
 
-  _initKeysFromMnemonic(mnemonic) {
+  _initKeys({mnemonic, externalMgmtKey}) {
     this.mnemonic = mnemonic
     const seed = bip39.mnemonicToSeed(mnemonic)
     const seedKey = hdkey.fromMasterSeed(seed)
@@ -122,8 +131,13 @@ class Keyring {
     this.asymEncryptionKey = nacl.box.keyPair.fromSecretKey(tmpEncKey)
     this.symEncryptionKey = baseKey.deriveChild(3)._hdkey._privateKey
 
-    // Management key is used to sign ethereum txs, so we use the MM base path
-    this.managementKey = seedKey.derivePath(MM_PATH).deriveChild(0)
+    if (externalMgmtKey) {
+      this.managementKey = externalMgmtKey
+      this.externalMgmtKey = true
+    } else {
+      // Management key is used to sign ethereum txs, so we use the MM base path
+      this.managementKey = seedKey.derivePath(MM_PATH).deriveChild(0)
+  }
   }
 
   static async recoverKeyring (shares) {
