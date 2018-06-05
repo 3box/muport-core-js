@@ -1,6 +1,6 @@
 {
   "name": "muport-core",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Create and use µPort identities",
   "main": "lib/muport.js",
   "directories": {
