@@ -32,6 +32,10 @@ help other identities recover.
         * [.updateIdentity(publicProfile, delegateDids)](#MuPort+updateIdentity) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
         * [.signJWT()](#MuPort+signJWT) ⇒ <code>Promise.&lt;String, Error&gt;</code>
         * [.verifyJWT(jwt, audience)](#MuPort+verifyJWT) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
+        * [.encrypt(msg, toPublic, nonce)](#MuPort+encrypt) ⇒ <code>Object</code>
+        * [.decrypt(ciphertext, fromPublic, nonce, toBuffer)](#MuPort+decrypt) ⇒ <code>String</code> \| <code>Buffer</code>
+        * [.symEncrypt(msg, nonce)](#MuPort+symEncrypt) ⇒ <code>Object</code>
+        * [.symDecrypt(ciphertext, nonce, toBuffer)](#MuPort+symDecrypt) ⇒ <code>String</code> \| <code>Buffer</code>
         * [.serializeState()](#MuPort+serializeState) ⇒ <code>String</code>
     * _static_
         * [.newIdentity(publicProfile, delegateDids, [opts])](#MuPort.newIdentity) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
@@ -127,6 +131,62 @@ Verifies a JWT.
 | --- | --- | --- | --- |
 | jwt | <code>String</code> |  | the JWT to verify |
 | audience | <code>String</code> | <code>this.did</code> | the audience, defaults to did of current identity |
+
+<a name="MuPort+encrypt"></a>
+
+### muPort.encrypt(msg, toPublic, nonce) ⇒ <code>Object</code>
+Asymmetrically encrypt a message
+
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
+**Returns**: <code>Object</code> - an object containing the nonce and the ciphertext  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| msg | <code>String</code> | the message to encrypt |
+| toPublic | <code>String</code> | the public key to encrypt to, encoded as a base64 string |
+| nonce | <code>String</code> | (optional) the nonce, encoded as a base64 string |
+
+<a name="MuPort+decrypt"></a>
+
+### muPort.decrypt(ciphertext, fromPublic, nonce, toBuffer) ⇒ <code>String</code> \| <code>Buffer</code>
+Decrypt an asymmetrically encrypted message
+
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
+**Returns**: <code>String</code> \| <code>Buffer</code> - the decrypted message  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ciphertext | <code>String</code> | the ciphertext to decrypt, encoded as a base64 string |
+| fromPublic | <code>String</code> | the public key of the entity that encrypted the msg, encoded as a base64 string |
+| nonce | <code>String</code> | the nonce, encoded as a base64 string |
+| toBuffer | <code>Boolean</code> | a boolean deciding whether to |
+
+<a name="MuPort+symEncrypt"></a>
+
+### muPort.symEncrypt(msg, nonce) ⇒ <code>Object</code>
+Symmetrically encrypt a message
+
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
+**Returns**: <code>Object</code> - an object containing the nonce and the ciphertext  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| msg | <code>String</code> | the message to encrypt |
+| nonce | <code>String</code> | (optional) the nonce, encoded as a base64 string |
+
+<a name="MuPort+symDecrypt"></a>
+
+### muPort.symDecrypt(ciphertext, nonce, toBuffer) ⇒ <code>String</code> \| <code>Buffer</code>
+Decrypt a symmetrically encrypted message
+
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
+**Returns**: <code>String</code> \| <code>Buffer</code> - the decrypted message  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ciphertext | <code>String</code> | the ciphertext to decrypt, encoded as a base64 string |
+| nonce | <code>String</code> | the nonce, encoded as a base64 string |
+| toBuffer | <code>Boolean</code> | a boolean deciding whether to |
 
 <a name="MuPort+serializeState"></a>
 

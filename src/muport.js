@@ -177,6 +177,54 @@ class MuPort {
   }
 
   /**
+   * Asymmetrically encrypt a message
+   *
+   * @param     {String}        msg                 the message to encrypt
+   * @param     {String}        toPublic            the public key to encrypt to, encoded as a base64 string
+   * @param     {String}        nonce               (optional) the nonce, encoded as a base64 string
+   * @return    {Object}                            an object containing the nonce and the ciphertext
+   */
+  encrypt (msg, toPublic, nonce) {
+    return this.keyring.encrypt(msg, toPublic, nonce)
+  }
+
+  /**
+   * Decrypt an asymmetrically encrypted message
+   *
+   * @param     {String}            ciphertext          the ciphertext to decrypt, encoded as a base64 string
+   * @param     {String}            fromPublic          the public key of the entity that encrypted the msg, encoded as a base64 string
+   * @param     {String}            nonce               the nonce, encoded as a base64 string
+   * @param     {Boolean}           toBuffer            a boolean deciding whether to
+   * @return    {String | Buffer}                       the decrypted message
+   */
+  decrypt (ciphertext, fromPublic, nonce, toBuffer) {
+    return this.keyring.decrypt(ciphertext, fromPublic, nonce, toBuffer)
+  }
+
+  /**
+   * Symmetrically encrypt a message
+   *
+   * @param     {String}        msg                 the message to encrypt
+   * @param     {String}        nonce               (optional) the nonce, encoded as a base64 string
+   * @return    {Object}                            an object containing the nonce and the ciphertext
+   */
+  symEncrypt (msg, nonce) {
+    return this.keyring.symEncrypt(msg, nonce)
+  }
+
+  /**
+   * Decrypt a symmetrically encrypted message
+   *
+   * @param     {String}            ciphertext          the ciphertext to decrypt, encoded as a base64 string
+   * @param     {String}            nonce               the nonce, encoded as a base64 string
+   * @param     {Boolean}           toBuffer            a boolean deciding whether to
+   * @return    {String | Buffer}                       the decrypted message
+   */
+  symDecrypt (ciphertext, nonce, toBuffer) {
+    return this.keyring.symDecrypt(ciphertext, nonce, toBuffer)
+  }
+
+  /**
    * Serialize the state of the current identity to be able to reconstruct it later.
    *
    * @return    {String}    the serialized state
