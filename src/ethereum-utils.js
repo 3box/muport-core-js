@@ -1,14 +1,15 @@
-const coder = require('web3/lib/solidity/coder')
-var CryptoJS = require('crypto-js')
+const EthAbi = require('web3-eth-abi')
 const bs58 = require('bs58')
 const ethers = require('ethers')
-const promisifyAll = require('bluebird').promisifyAll
 const RevokeAndPublishArtifact = require('ethereum-claims-registry').applications.RevokeAndPublish
 const RevokeAndPublishAbi = RevokeAndPublishArtifact.abi
 const RevokeAndPublishAddress = RevokeAndPublishArtifact.networks[1].address
+const EthrDIDRegistryArtifact = require('ethr-did-registry')
+const EthrDIDRegistryAbi = RevokeAndPublishArtifact.abi
+const EthrDIDRegistryAddress = RevokeAndPublishArtifact.networks[1].address
 
 const PROVIDER_URL = 'https://mainnet.infura.io'
-const claimKey = 'muPortDocumentIPFS1220'
+const claimKey = '0x' + Buffer.from('muPortDocumentIPFS1220', 'utf8').toString('hex')
 
 class EthereumUtils {
 
@@ -52,11 +53,7 @@ const encodeIpfsHash = (hash) => {
 
 const encodeMethodCall = (methodName, args) => {
   const methodAbi = RevokeAndPublishAbi.filter(obj => obj.name === methodName)[0]
-  const types = methodAbi.inputs.map(o => o.type)
-  const fullName = methodName + '(' + types.join() + ')'
-  const signature = CryptoJS.SHA3(fullName, { outputLength: 256 }).toString(CryptoJS.enc.Hex).slice(0, 8)
-
-  return '0x' + signature + coder.encodeParams(types, args)
+  return EthAbi.encodeFunctionCall(methodAbi, args)
 }
 
 module.exports = EthereumUtils
