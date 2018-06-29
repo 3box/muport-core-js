@@ -1,15 +1,12 @@
 const EthAbi = require('web3-eth-abi')
 const bs58 = require('bs58')
 const ethers = require('ethers')
-const RevokeAndPublishArtifact = require('ethereum-claims-registry').applications.RevokeAndPublish
-const RevokeAndPublishAbi = RevokeAndPublishArtifact.abi
-const RevokeAndPublishAddress = RevokeAndPublishArtifact.networks[1].address
 const EthrDIDRegistryArtifact = require('ethr-did-registry')
-const EthrDIDRegistryAbi = RevokeAndPublishArtifact.abi
-const EthrDIDRegistryAddress = RevokeAndPublishArtifact.networks[1].address
+const EthrDIDRegistryAbi = EthrDIDRegistryArtifact.abi
+const EthrDIDRegistryAddress = EthrDIDRegistryArtifact.networks[1].address
 
 const PROVIDER_URL = 'https://mainnet.infura.io'
-const claimKey = '0x' + Buffer.from('muPortDocumentIPFS1220', 'utf8').toString('hex')
+const claimKey = '0x' + Buffer.from('muPortDocumentIPFS1220', 'utf8').toString('hex') + '00'.repeat(10)
 
 class EthereumUtils {
 
@@ -19,13 +16,13 @@ class EthereumUtils {
 
   async createPublishTxParams (ipfsHash, managementAddress) {
     const encodedHash = encodeIpfsHash(ipfsHash)
-    const data = encodeMethodCall('publish', [managementAddress, claimKey, encodedHash])
+    const data = encodeMethodCall('setAttribute', [managementAddress, claimKey, encodedHash, 0])
     const nonce = await this.provider.getTransactionCount(managementAddress)
     const gasPrice = (await this.provider.getGasPrice()).toNumber()
     const txParams = {
       nonce,
       gasPrice,
-      to: RevokeAndPublishAddress,
+      to: EthrDIDRegistryAddress,
       data,
     }
     // we need to add 500 as a gas buffer
@@ -52,7 +49,7 @@ const encodeIpfsHash = (hash) => {
 }
 
 const encodeMethodCall = (methodName, args) => {
-  const methodAbi = RevokeAndPublishAbi.filter(obj => obj.name === methodName)[0]
+  const methodAbi = EthrDIDRegistryAbi.filter(obj => obj.name === methodName)[0]
   return EthAbi.encodeFunctionCall(methodAbi, args)
 }
 

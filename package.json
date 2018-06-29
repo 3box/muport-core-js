@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "jest --coverage",
-    "build": "babel src --out-dir lib",
+    "build": "node_modules/.bin/babel src --out-dir lib",
     "prepublish": "npm run build",
     "generate-readme": "cp readme-template.md README.md; ./node_modules/.bin/jsdoc2md -d 2 src/muport.js >> README.md"
   },
@@ -35,13 +35,14 @@
     "ethers": "^3.0.24",
     "ethr-did-registry": "0.0.3",
     "ipfs-mini": "^1.1.2",
-    "muport-did-resolver": "^0.1.3",
+    "muport-did-resolver": "^0.2.0-beta-3",
     "secrets.js": "^0.1.8",
     "tweetnacl": "^1.0.0",
     "tweetnacl-util": "^0.15.0",
     "web3-eth-abi": "^1.0.0-beta.34"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
     "ganache-cli": "^6.1.3",

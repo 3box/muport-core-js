@@ -1,16 +1,12 @@
 const assert = require('chai').assert
 const ganache = require('ganache-cli')
 const bs58 = require('bs58')
-const EthereumClaimsRegistryAbi = require('ethereum-claims-registry').registry.abi
+const EthrDIDRegistryAbi = require('ethr-did-registry').abi
 const Web3 = require('web3')
 const promisifyAll = require('bluebird').promisifyAll
 const nock = require('nock')
 let IPFS = require('ipfs-mini')
 let ipfsDataStore = {}
-IPFS.prototype.catJSON = (hash, cb) => {
-    console.log('catJSON', hash)
-  cb(null, ipfsDataStore[hash])
-}
 let num = 1
 IPFS.prototype.addJSON = (json, cb) => {
   // fake ipfs hash
@@ -51,13 +47,10 @@ describe('MuPort', () => {
     await server.listenAsync(8555)
     web3 = new Web3(server.provider)
     accounts = await web3.eth.getAccounts()
-    await deploy(deployData.EthereumClaimsRegistry)
-    await deploy(deployData.RevokeAndPublish)
-    //const EthereumClaimsRegistry = new web3.eth.Contract(EthereumClaimsRegistryAbi)
-    //claimsReg = promisifyAll(EthereumClaimsRegistry.at(deployData.EthereumClaimsRegistry.contractAddress))
-    claimsReg = new web3.eth.Contract(EthereumClaimsRegistryAbi, deployData.EthereumClaimsRegistry.contractAddress)
+    await deploy(deployData.EthereumDIDRegistry)
+    ethrRegistry = new web3.eth.Contract(EthrDIDRegistryAbi, deployData.EthereumDIDRegistry.contractAddress)
 
-    jest.setTimeout(15000)
+    jest.setTimeout(50000)
   })
 
   it('create an identity correctly', async () => {
@@ -134,10 +127,6 @@ describe('MuPort', () => {
     await web3.eth.sendTransaction({from: accounts[0], to: updateData.address, value: web3.utils.toWei(updateData.costInEther + '', 'ether')})
     await updateData.finishUpdate()
 
-    let entry = await claimsReg.methods.registry(deployData.RevokeAndPublish.contractAddress, updateData.address, CLAIM_KEY).call()
-    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
-    assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
-
     lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
   })
@@ -158,10 +147,6 @@ describe('MuPort', () => {
 
     const txHash = (await web3.eth.sendTransaction({ ...updateData.txParams, from: id5externalMgmtKey})).transactionHash
     await updateData.finishUpdate(txHash)
-
-    let entry = await claimsReg.methods.registry(deployData.RevokeAndPublish.contractAddress, updateData.address, CLAIM_KEY).call()
-    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
-    assert.equal(hash, id5.documentHash, 'hash in registry should be the same as in muport ID')
 
     lookedUpDoc = await MuPort.resolveIdentityDocument(id5.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id5.document, 'looked up document should be the same as in muport ID')
@@ -184,10 +169,6 @@ describe('MuPort', () => {
     await web3.eth.sendTransaction({from: accounts[0], to: updateData.address, value: web3.utils.toWei(updateData.costInEther + '', 'ether')})
     await updateData.finishUpdate()
 
-    let entry = await claimsReg.methods.registry(deployData.RevokeAndPublish.contractAddress, updateData.address, CLAIM_KEY).call()
-    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
-    assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
-
     lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
   })
@@ -197,10 +178,6 @@ describe('MuPort', () => {
 
     await web3.eth.sendTransaction({from: accounts[0], to: updateData.address, value: web3.utils.toWei(updateData.costInEther + '', 'ether')})
     await updateData.finishUpdate()
-
-    let entry = await claimsReg.methods.registry(deployData.RevokeAndPublish.contractAddress, updateData.address, CLAIM_KEY).call()
-    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
-    assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
 
     let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
