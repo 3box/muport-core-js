@@ -3,6 +3,7 @@ title: "Simple ID (muPort)"
 index: 6
 category: "guides"
 type: "content"
+source: "https://github.com/uport-project/muport-core-js/blob/master/docs/guides/simple-id.md"
 ---
 
 # Simple ID (muPort)
