@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "jest --coverage",
-    "build": "babel src --out-dir lib",
+    "build": "node_modules/.bin/babel src --out-dir lib",
     "prepublish": "npm run build",
     "generate-readme": "cp readme-template.md README.md; ./node_modules/.bin/jsdoc2md -d 2 src/muport.js >> README.md"
   },
@@ -27,29 +27,29 @@
     "bip39": "^2.5.0",
     "bluebird": "^3.5.1",
     "bs58": "^4.0.1",
-    "crypto-js": "^3.1.9-1",
-    "did-jwt": "0.0.7",
-    "did-resolver": "^0.0.4",
-    "ethereum-claims-registry": "^0.0.4",
-    "ethereumjs-tx": "^1.3.4",
+    "did-jwt": "0.0.8",
+    "did-resolver": "0.0.4",
+    "ethereum-claims-registry": "0.0.4",
+    "ethereumjs-tx": "^1.3.5",
     "ethereumjs-wallet": "^0.6.0",
-    "ethers": "^3.0.15",
-    "ethjs-abi": "^0.2.1",
+    "ethers": "^3.0.24",
+    "ethr-did-registry": "0.0.3",
     "ipfs-mini": "^1.1.2",
-    "muport-did-resolver": "^0.1.0",
+    "muport-did-resolver": "^0.2.0",
     "secrets.js": "^0.1.8",
     "tweetnacl": "^1.0.0",
     "tweetnacl-util": "^0.15.0",
-    "web3": "0.20.6"
+    "web3-eth-abi": "^1.0.0-beta.34"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.6.1",
+    "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
-    "ganache-cli": "^6.1.0",
-    "jest": "^22.4.2",
-    "jsdoc-to-markdown": "^4.0.1"
+    "ganache-cli": "^6.1.3",
+    "ipfsd-ctl": "^0.37.5",
+    "jest": "^23.2.0",
+    "jsdoc-to-markdown": "^4.0.1",
+    "nock": "^9.3.3",
+    "web3": "^1.0.0-beta.34"
   }
 }

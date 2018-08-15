@@ -1,14 +1,12 @@
-const coder = require('web3/lib/solidity/coder')
-var CryptoJS = require('crypto-js')
+const EthAbi = require('web3-eth-abi')
 const bs58 = require('bs58')
 const ethers = require('ethers')
-const promisifyAll = require('bluebird').promisifyAll
-const RevokeAndPublishArtifact = require('ethereum-claims-registry').applications.RevokeAndPublish
-const RevokeAndPublishAbi = RevokeAndPublishArtifact.abi
-const RevokeAndPublishAddress = RevokeAndPublishArtifact.networks[1].address
+const EthrDIDRegistryArtifact = require('ethr-did-registry')
+const EthrDIDRegistryAbi = EthrDIDRegistryArtifact.abi
+const EthrDIDRegistryAddress = EthrDIDRegistryArtifact.networks[1].address
 
 const PROVIDER_URL = 'https://mainnet.infura.io'
-const claimKey = 'muPortDocumentIPFS1220'
+const claimKey = '0x' + Buffer.from('muPortDocument', 'utf8').toString('hex')
 
 class EthereumUtils {
 
@@ -18,13 +16,13 @@ class EthereumUtils {
 
   async createPublishTxParams (ipfsHash, managementAddress) {
     const encodedHash = encodeIpfsHash(ipfsHash)
-    const data = encodeMethodCall('publish', [managementAddress, claimKey, encodedHash])
+    const data = encodeMethodCall('setAttribute', [managementAddress, claimKey, encodedHash, 0])
     const nonce = await this.provider.getTransactionCount(managementAddress)
     const gasPrice = (await this.provider.getGasPrice()).toNumber()
     const txParams = {
       nonce,
       gasPrice,
-      to: RevokeAndPublishAddress,
+      to: EthrDIDRegistryAddress,
       data,
     }
     // we need to add 500 as a gas buffer
@@ -47,16 +45,12 @@ class EthereumUtils {
 }
 
 const encodeIpfsHash = (hash) => {
-  return '0x' + bs58.decode(hash).toString('hex').slice(4)
+  return '0x' + bs58.decode(hash).toString('hex')
 }
 
 const encodeMethodCall = (methodName, args) => {
-  const methodAbi = RevokeAndPublishAbi.filter(obj => obj.name === methodName)[0]
-  const types = methodAbi.inputs.map(o => o.type)
-  const fullName = methodName + '(' + types.join() + ')'
-  const signature = CryptoJS.SHA3(fullName, { outputLength: 256 }).toString(CryptoJS.enc.Hex).slice(0, 8)
-
-  return '0x' + signature + coder.encodeParams(types, args)
+  const methodAbi = EthrDIDRegistryAbi.filter(obj => obj.name === methodName)[0]
+  return EthAbi.encodeFunctionCall(methodAbi, args)
 }
 
 module.exports = EthereumUtils

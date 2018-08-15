@@ -1,14 +1,11 @@
 const assert = require('chai').assert
 const ganache = require('ganache-cli')
-const bs58 = require('bs58')
-const EthereumClaimsRegistryAbi = require('ethereum-claims-registry').registry.abi
+const EthrDIDRegistryAbi = require('ethr-did-registry').abi
 const Web3 = require('web3')
 const promisifyAll = require('bluebird').promisifyAll
+const nock = require('nock')
 let IPFS = require('ipfs-mini')
 let ipfsDataStore = {}
-IPFS.prototype.catJSON = (hash, cb) => {
-  cb(null, ipfsDataStore[hash])
-}
 let num = 1
 IPFS.prototype.addJSON = (json, cb) => {
   // fake ipfs hash
@@ -16,7 +13,16 @@ IPFS.prototype.addJSON = (json, cb) => {
   ipfsDataStore[hash] = json
   cb(null, hash)
 }
+nock('https://ipfs.infura.io')
+  .persist()
+  .defaultReplyHeaders({ 'access-control-allow-origin': '*',
+     'Content-Type': 'application/json',
+     'Accept': 'application/json'
+   })
+  .get(/ipfs.*/)
+  .reply(200, uri => ipfsDataStore[uri.slice(6)])
 const RPC_PROV_URL = 'http://localhost:8555'
+const CLAIM_KEY = '0x' + Buffer.from('muPortDocumentIPFS1220', 'utf8').toString('hex')
 const deployData = require('./deployData.json')
 const MuPort = require('../muport')
 let id1
@@ -31,6 +37,7 @@ describe('MuPort', () => {
   let recoveredId4
   let server
   let web3
+  let ipfsd
   let accounts
   let claimsReg
 
@@ -38,18 +45,15 @@ describe('MuPort', () => {
     server = promisifyAll(ganache.server())
     await server.listenAsync(8555)
     web3 = new Web3(server.provider)
-    web3.eth = promisifyAll(web3.eth)
-    accounts = await web3.eth.getAccountsAsync()
-    await deploy(deployData.EthereumClaimsRegistry)
-    await deploy(deployData.RevokeAndPublish)
-    const EthereumClaimsRegistry = web3.eth.contract(EthereumClaimsRegistryAbi)
-    claimsReg = promisifyAll(EthereumClaimsRegistry.at(deployData.EthereumClaimsRegistry.contractAddress))
+    accounts = await web3.eth.getAccounts()
+    await deploy(deployData.EthereumDIDRegistry)
+    ethrRegistry = new web3.eth.Contract(EthrDIDRegistryAbi, deployData.EthereumDIDRegistry.contractAddress)
 
-    jest.setTimeout(15000)
+    jest.setTimeout(50000)
   })
 
   it('create an identity correctly', async () => {
-    id1 = await MuPort.newIdentity({name: 'lala'}, null, {rpcProviderUrl: RPC_PROV_URL})
+    id1 = await MuPort.newIdentity({name: 'lala'}, null, {rpcProviderUrl: RPC_PROV_URL, ipfsConf: { host: 'localhost', protocol: 'http' }})
     const serialized = id1.serializeState()
 
     const tmpId = new MuPort(serialized)
@@ -60,7 +64,7 @@ describe('MuPort', () => {
     id2 = await MuPort.newIdentity({name: 'id2'})
     id3 = await MuPort.newIdentity({name: 'id3'})
     // get dids from three identities and pass them along the identity creation process
-    id4 = await MuPort.newIdentity({name: 'id4'}, [id1.getDid(), id2.getDid(), id3.getDid()])
+    id4 = await MuPort.newIdentity({name: 'id4'}, [id1.getDid(), id2.getDid(), id3.getDid()], {rpcProviderUrl: RPC_PROV_URL})//, ipfsConf: { host: 'localhost', port: 12345, protocol: 'http' }})
 
     const didOfLostId = id4.getDid()
     const share2 = await id2.helpRecover(didOfLostId)
@@ -119,12 +123,8 @@ describe('MuPort', () => {
     let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should not be updated yet')
 
-    await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
+    await web3.eth.sendTransaction({from: accounts[0], to: updateData.address, value: web3.utils.toWei(updateData.costInEther + '', 'ether')})
     await updateData.finishUpdate()
-
-    let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
-    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
-    assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
 
     lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
@@ -144,12 +144,8 @@ describe('MuPort', () => {
     let lookedUpDoc = await MuPort.resolveIdentityDocument(id5.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id5.document, 'looked up document should not be updated yet')
 
-    const txHash = await web3.eth.sendTransactionAsync({ ...updateData.txParams, from: id5externalMgmtKey})
+    const txHash = (await web3.eth.sendTransaction({ ...updateData.txParams, from: id5externalMgmtKey})).transactionHash
     await updateData.finishUpdate(txHash)
-
-    let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
-    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
-    assert.equal(hash, id5.documentHash, 'hash in registry should be the same as in muport ID')
 
     lookedUpDoc = await MuPort.resolveIdentityDocument(id5.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id5.document, 'looked up document should be the same as in muport ID')
@@ -169,12 +165,8 @@ describe('MuPort', () => {
     let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should not be updated yet')
 
-    await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
+    await web3.eth.sendTransaction({from: accounts[0], to: updateData.address, value: web3.utils.toWei(updateData.costInEther + '', 'ether')})
     await updateData.finishUpdate()
-
-    let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
-    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
-    assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
 
     lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
@@ -183,12 +175,8 @@ describe('MuPort', () => {
   it('updating delegates a second time works as intended', async () => {
     const updateData = await id1.updateIdentity(null, [id4.getDid(), id2.getDid(), id3.getDid()])
 
-    await web3.eth.sendTransactionAsync({from: accounts[0], to: updateData.address, value: web3.toWei(updateData.costInEther, 'ether')})
+    await web3.eth.sendTransaction({from: accounts[0], to: updateData.address, value: web3.utils.toWei(updateData.costInEther + '', 'ether')})
     await updateData.finishUpdate()
-
-    let entry = await claimsReg.registryAsync(deployData.RevokeAndPublish.contractAddress, updateData.address, 'muPortDocumentIPFS1220')
-    let hash = bs58.encode(Buffer.from('1220' + entry.slice(2), 'hex'))
-    assert.equal(hash, id1.documentHash, 'hash in registry should be the same as in muport ID')
 
     let lookedUpDoc = await MuPort.resolveIdentityDocument(id1.getDid(), {rpcProviderUrl: RPC_PROV_URL})
     assert.deepEqual(lookedUpDoc, id1.document, 'looked up document should be the same as in muport ID')
@@ -214,8 +202,8 @@ describe('MuPort', () => {
   })
 
   const deploy = async deployData => {
-    await web3.eth.sendTransactionAsync({from: accounts[0], to: deployData.senderAddress, value: web3.toWei(deployData.costInEther, 'ether')})
-    let txHash = await web3.eth.sendRawTransactionAsync(deployData.rawTx)
-    let receipt = await web3.eth.getTransactionReceiptAsync(txHash)
+    await web3.eth.sendTransaction({from: accounts[0], to: deployData.senderAddress, value: web3.utils.toWei(deployData.costInEther + '', 'ether')})
+    let txHash = await web3.eth.sendSignedTransaction(deployData.rawTx)
+    let receipt = await web3.eth.getTransactionReceipt(txHash)
   }
 })
