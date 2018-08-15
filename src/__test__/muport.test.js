@@ -1,6 +1,5 @@
 const assert = require('chai').assert
 const ganache = require('ganache-cli')
-const bs58 = require('bs58')
 const EthrDIDRegistryAbi = require('ethr-did-registry').abi
 const Web3 = require('web3')
 const promisifyAll = require('bluebird').promisifyAll

@@ -6,7 +6,7 @@ const EthrDIDRegistryAbi = EthrDIDRegistryArtifact.abi
 const EthrDIDRegistryAddress = EthrDIDRegistryArtifact.networks[1].address
 
 const PROVIDER_URL = 'https://mainnet.infura.io'
-const claimKey = '0x' + Buffer.from('muPortDocumentIPFS1220', 'utf8').toString('hex') + '00'.repeat(10)
+const claimKey = '0x' + Buffer.from('muPortDocument', 'utf8').toString('hex')
 
 class EthereumUtils {
 
@@ -45,7 +45,7 @@ class EthereumUtils {
 }
 
 const encodeIpfsHash = (hash) => {
-  return '0x' + bs58.decode(hash).toString('hex').slice(4)
+  return '0x' + bs58.decode(hash).toString('hex')
 }
 
 const encodeMethodCall = (methodName, args) => {
