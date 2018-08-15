@@ -1,0 +1,10 @@
+machine:
+  node:
+    version: v10.5.0
+
+test:
+  override:
+    - npm test
+  post:
+    - bash <(curl -s https://codecov.io/bash)
+

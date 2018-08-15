@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/muport-core-js
     docker:
-      - image: circleci/node:8
+      - image: circleci/node:10
     steps:
       - checkout
 
@@ -15,8 +15,8 @@ jobs:
       - run:
           name: install-serverless-and dependencies
           command: |
-            sudo npm i -g  codecov
-            yarn
+            sudo npm i -g  codecov node-gyp
+            npm i
 
       - run:
           name: test
