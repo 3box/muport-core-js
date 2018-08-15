@@ -28,7 +28,7 @@
     "bluebird": "^3.5.1",
     "bs58": "^4.0.1",
     "crypto-js": "^3.1.9-1",
-    "did-jwt": "0.0.7",
+    "did-jwt": "0.0.8",
     "did-resolver": "^0.0.4",
     "ethereum-claims-registry": "^0.0.4",
     "ethereumjs-tx": "^1.3.4",
