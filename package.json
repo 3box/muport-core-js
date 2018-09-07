@@ -1,6 +1,6 @@
 {
   "name": "muport-core",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Create and use µPort identities",
   "main": "lib/muport.js",
   "directories": {
@@ -44,6 +44,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
     "ganache-cli": "^6.1.3",
