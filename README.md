@@ -20,7 +20,7 @@ Primary object for interacting with a µPort identity. MuPort enables creation a
 updating of µPort identities. It also provides functionality to sign claims and
 help other identities recover.
 
-**Kind**: global class  
+**Kind**: global class
 
 * [MuPort](#MuPort)
     * [new MuPort(serializeState, [opts])](#new_MuPort_new)
@@ -52,7 +52,7 @@ Instantiates a µPort identity from its serialized state.
 | --- | --- | --- |
 | serializeState | <code>String</code> | the serialized state of a µPort identity |
 | [opts] | <code>Object</code> | optional parameters |
-| opts.ipfsConf | <code>Object</code> | configuration options for ipfs-mini |
+| opts.ipfsConf | <code>Object</code> | configuration options for ipfs-api |
 | opts.rpcProviderUrl | <code>String</code> | rpc url to a custom ethereum node |
 
 <a name="MuPort+helpRecover"></a>
@@ -61,8 +61,8 @@ Instantiates a µPort identity from its serialized state.
 Help another identity recover. Returns a decrypted share if the current identity is a delegate
 returns undefined otherwise
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Promise.&lt;String, Error&gt;</code> - a share that the recovering identity can use  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Promise.&lt;String, Error&gt;</code> - a share that the recovering identity can use
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -74,22 +74,22 @@ returns undefined otherwise
 The DID is the identifier of the identity. This is a unique string that can be used to
 look up information about the identity.
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>String</code> - the DID  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>String</code> - the DID
 <a name="MuPort+getDidDocument"></a>
 
 ### muPort.getDidDocument() ⇒ <code>Object</code>
 The DID Document is a json object that contains information such as public keys
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Object</code> - the DID Document  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Object</code> - the DID Document
 <a name="MuPort+getRecoveryDelegateDids"></a>
 
 ### muPort.getRecoveryDelegateDids() ⇒ <code>Array.&lt;String&gt;</code>
 The recovery delegates that can help this identity recover
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Array.&lt;String&gt;</code> - an array containing the DIDs of the delegates  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Array.&lt;String&gt;</code> - an array containing the DIDs of the delegates
 <a name="MuPort+updateIdentity"></a>
 
 ### muPort.updateIdentity(publicProfile, delegateDids) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
@@ -104,8 +104,8 @@ will throw an error if there is to little ether in the `address`.
 Both publicProfile and delegateDids are optional and you may pass null if you don't wish to
 update one of them.
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Promise.&lt;Object, Error&gt;</code> - an object with the data needed to finalize the update  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Promise.&lt;Object, Error&gt;</code> - an object with the data needed to finalize the update
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -117,15 +117,15 @@ update one of them.
 ### muPort.signJWT() ⇒ <code>Promise.&lt;String, Error&gt;</code>
 Signs the given payload (claim) and return a promis with the JWT.
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Promise.&lt;String, Error&gt;</code> - a promise that resolves to a JWT  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Promise.&lt;String, Error&gt;</code> - a promise that resolves to a JWT
 <a name="MuPort+verifyJWT"></a>
 
 ### muPort.verifyJWT(jwt, audience) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
 Verifies a JWT.
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Promise.&lt;Object, Error&gt;</code> - a promise that resolves to the decoded JWT  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Promise.&lt;Object, Error&gt;</code> - a promise that resolves to the decoded JWT
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -137,8 +137,8 @@ Verifies a JWT.
 ### muPort.encrypt(msg, toPublic, nonce) ⇒ <code>Object</code>
 Asymmetrically encrypt a message
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Object</code> - an object containing the nonce and the ciphertext  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Object</code> - an object containing the nonce and the ciphertext
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -151,8 +151,8 @@ Asymmetrically encrypt a message
 ### muPort.decrypt(ciphertext, fromPublic, nonce, toBuffer) ⇒ <code>String</code> \| <code>Buffer</code>
 Decrypt an asymmetrically encrypted message
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>String</code> \| <code>Buffer</code> - the decrypted message  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>String</code> \| <code>Buffer</code> - the decrypted message
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -166,8 +166,8 @@ Decrypt an asymmetrically encrypted message
 ### muPort.symEncrypt(msg, nonce) ⇒ <code>Object</code>
 Symmetrically encrypt a message
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Object</code> - an object containing the nonce and the ciphertext  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Object</code> - an object containing the nonce and the ciphertext
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -179,8 +179,8 @@ Symmetrically encrypt a message
 ### muPort.symDecrypt(ciphertext, nonce, toBuffer) ⇒ <code>String</code> \| <code>Buffer</code>
 Decrypt a symmetrically encrypted message
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>String</code> \| <code>Buffer</code> - the decrypted message  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>String</code> \| <code>Buffer</code> - the decrypted message
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -193,15 +193,15 @@ Decrypt a symmetrically encrypted message
 ### muPort.serializeState() ⇒ <code>String</code>
 Serialize the state of the current identity to be able to reconstruct it later.
 
-**Kind**: instance method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>String</code> - the serialized state  
+**Kind**: instance method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>String</code> - the serialized state
 <a name="MuPort.newIdentity"></a>
 
 ### MuPort.newIdentity(publicProfile, delegateDids, [opts]) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
 Creates a new µPort identity.
 
-**Kind**: static method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Promise.&lt;MuPort, Error&gt;</code> - a promise that resolves to an instance of the MuPort class  
+**Kind**: static method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Promise.&lt;MuPort, Error&gt;</code> - a promise that resolves to an instance of the MuPort class
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -209,7 +209,7 @@ Creates a new µPort identity.
 | delegateDids | <code>Array.&lt;String&gt;</code> | three DIDs that can be used to recover the identity at a later point (optional) |
 | [opts] | <code>Object</code> | optional parameters |
 | opts.externalMgmtKey | <code>String</code> | an ethereum address to be used as an external managementKey |
-| opts.ipfsConf | <code>Object</code> | configuration options for ipfs-mini |
+| opts.ipfsConf | <code>Object</code> | configuration options for ipfs-api |
 | opts.rpcProviderUrl | <code>String</code> | rpc url to a custom ethereum node |
 
 <a name="MuPort.recoverIdentity"></a>
@@ -217,15 +217,15 @@ Creates a new µPort identity.
 ### MuPort.recoverIdentity(did, shares, [opts]) ⇒ <code>Promise.&lt;MuPort, Error&gt;</code>
 Recovers a µPort identity.
 
-**Kind**: static method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Promise.&lt;MuPort, Error&gt;</code> - a promise that resolves to an instance of the MuPort class  
+**Kind**: static method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Promise.&lt;MuPort, Error&gt;</code> - a promise that resolves to an instance of the MuPort class
 
 | Param | Type | Description |
 | --- | --- | --- |
 | did | <code>String</code> | the DID of the identity to be recovered |
 | shares | <code>Array.&lt;String&gt;</code> | atleast two shares that your delegates helped recover |
 | [opts] | <code>Object</code> | optional parameters |
-| opts.ipfsConf | <code>Object</code> | configuration options for ipfs-mini |
+| opts.ipfsConf | <code>Object</code> | configuration options for ipfs-api |
 | opts.rpcProviderUrl | <code>String</code> | rpc url to a custom ethereum node |
 
 <a name="MuPort.resolveIdentityDocument"></a>
@@ -233,13 +233,13 @@ Recovers a µPort identity.
 ### MuPort.resolveIdentityDocument(did, [opts]) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
 Resovles the identity document for the given DID.
 
-**Kind**: static method of [<code>MuPort</code>](#MuPort)  
-**Returns**: <code>Promise.&lt;Object, Error&gt;</code> - a promise that resolves to the identity document  
+**Kind**: static method of [<code>MuPort</code>](#MuPort)
+**Returns**: <code>Promise.&lt;Object, Error&gt;</code> - a promise that resolves to the identity document
 
 | Param | Type | Description |
 | --- | --- | --- |
 | did | <code>String</code> | the DID of the identity |
 | [opts] | <code>Object</code> | optional parameters |
-| opts.ipfsConf | <code>Object</code> | configuration options for ipfs-mini |
+| opts.ipfsConf | <code>Object</code> | configuration options for ipfs-api |
 | opts.rpcProviderUrl | <code>String</code> | rpc url to a custom ethereum node |
 

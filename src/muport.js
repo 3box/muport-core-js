@@ -1,4 +1,4 @@
-const IPFS = require('ipfs-mini')
+const IPFS = require('ipfs-api')
 const promisifyAll = require('bluebird').promisifyAll
 const resolve = require('did-resolver')
 const registerMuportResolver = require('muport-did-resolver')
@@ -16,13 +16,12 @@ let ipfs
  * help other identities recover.
  */
 class MuPort {
-
   /**
    * Instantiates a µPort identity from its serialized state.
    *
    * @param     {String}    serializeState          the serialized state of a µPort identity
    * @param     {Object}    [opts]                  optional parameters
-   * @param     {Object}    opts.ipfsConf           configuration options for ipfs-mini
+   * @param     {Object}    opts.ipfsConf           configuration options for ipfs-api
    * @param     {String}    opts.rpcProviderUrl     rpc url to a custom ethereum node
    * @return    {MuPort}                            self
    */
@@ -66,7 +65,7 @@ class MuPort {
    *
    * @return    {String}        the DID
    */
-  getDid() {
+  getDid () {
     return this.did
   }
 
@@ -87,7 +86,7 @@ class MuPort {
   getRecoveryDelegateDids () {
     const toBuffer = true
     let dids = []
-    if (this.document.symEncryptedData && this.document.symEncryptedData.symEncDids){
+    if (this.document.symEncryptedData && this.document.symEncryptedData.symEncDids) {
       dids = this.document.symEncryptedData.symEncDids.map(
         (encDid) => bufferToDid(this.keyring.symDecrypt(encDid.ciphertext, encDid.nonce, toBuffer))
       )
@@ -112,7 +111,7 @@ class MuPort {
    * @return    {Promise<Object, Error>}                an object with the data needed to finalize the update
    */
   async updateIdentity (publicProfile, delegateDids) {
-    if (!publicProfile && ! delegateDids) throw new Error('publicProfile or delegateDids has to be set')
+    if (!publicProfile && !delegateDids) throw new Error('publicProfile or delegateDids has to be set')
     let newDocument = JSON.parse(JSON.stringify(this.document))
     if (publicProfile) {
       newDocument.publicProfile = publicProfile
@@ -127,7 +126,8 @@ class MuPort {
       newDocument.symEncryptedData = newDocument.symEncryptedData || {}
       newDocument.symEncryptedData.symEncDids = delegateDids.map((did) => this.keyring.symEncrypt(didToBuffer(did)))
     }
-    let newDocumentHash = await ipfs.addJSONAsync(newDocument)
+    // let newDocumentHash = await ipfs.addJSONAsync(newDocument)
+    let newDocumentHash = await ipfs.add(Buffer.from(JSON.stringify(newDocument)))
     // prepare ethereum tx
     const address = this.keyring.getManagementAddress()
     const txParams = await this.ethUtils.createPublishTxParams(newDocumentHash, address)
@@ -173,7 +173,7 @@ class MuPort {
    * @return    {Promise<Object, Error>}            a promise that resolves to the decoded JWT
    */
   async verifyJWT (jwt, audience = this.did) {
-    return didJWT.verifyJWT(jwt, {audience})
+    return didJWT.verifyJWT(jwt, { audience })
   }
 
   /**
@@ -245,7 +245,7 @@ class MuPort {
    * @param     {Array<String>}     delegateDids            three DIDs that can be used to recover the identity at a later point (optional)
    * @param     {Object}            [opts]                  optional parameters
    * @param     {String}            opts.externalMgmtKey    an ethereum address to be used as an external managementKey
-   * @param     {Object}            opts.ipfsConf           configuration options for ipfs-mini
+   * @param     {Object}            opts.ipfsConf           configuration options for ipfs-api
    * @param     {String}            opts.rpcProviderUrl     rpc url to a custom ethereum node
    * @return    {Promise<MuPort, Error>}                    a promise that resolves to an instance of the MuPort class
    */
@@ -259,21 +259,22 @@ class MuPort {
       recoveryNetwork = await keyring.createShares(delegateDids, didsPublicKeys)
 
       let symEncryptedDelegateDids = delegateDids.map((did) => keyring.symEncrypt(didToBuffer(did)))
-      symEncryptedData = {symEncDids: symEncryptedDelegateDids}
+      symEncryptedData = { symEncDids: symEncryptedDelegateDids }
     }
     const publicKeys = keyring.getPublicKeys()
 
     const doc = createMuportDocument(publicKeys, recoveryNetwork, publicProfile, symEncryptedData)
-    const docHash = await ipfs.addJSONAsync(doc)
+    // const docHash = await ipfs.addJSONAsync(doc)
+    const docHash = await ipfs.add(Buffer.from(JSON.stringify(doc)))
     const did = 'did:muport:' + docHash
 
     return new MuPort(JSON.stringify({
-        did,
-        document: doc,
-        documentHash: docHash,
-        keyring: keyring.serialize()
-      }),
-      opts
+      did,
+      document: doc,
+      documentHash: docHash,
+      keyring: keyring.serialize()
+    }),
+    opts
     )
   }
 
@@ -283,18 +284,18 @@ class MuPort {
    * @param     {String}            did                     the DID of the identity to be recovered
    * @param     {Array<String>}     shares                  atleast two shares that your delegates helped recover
    * @param     {Object}            [opts]                  optional parameters
-   * @param     {Object}            opts.ipfsConf           configuration options for ipfs-mini
+   * @param     {Object}            opts.ipfsConf           configuration options for ipfs-api
    * @param     {String}            opts.rpcProviderUrl     rpc url to a custom ethereum node
    * @return    {Promise<MuPort, Error>}                    a promise that resolves to an instance of the MuPort class
    */
   static async recoverIdentity (did, shares, opts = {}) {
     initIpfs(opts.ipfsConf)
     return new MuPort(JSON.stringify({
-        did,
-        document: await MuPort.resolveIdentityDocument(did, opts),
-        keyring: (await Keyring.recoverKeyring(shares)).serialize()
-      }),
-      opts
+      did,
+      document: await MuPort.resolveIdentityDocument(did, opts),
+      keyring: (await Keyring.recoverKeyring(shares)).serialize()
+    }),
+    opts
     )
   }
 
@@ -303,7 +304,7 @@ class MuPort {
    *
    * @param     {String}            did                     the DID of the identity
    * @param     {Object}            [opts]                  optional parameters
-   * @param     {Object}            opts.ipfsConf           configuration options for ipfs-mini
+   * @param     {Object}            opts.ipfsConf           configuration options for ipfs-api
    * @param     {String}            opts.rpcProviderUrl     rpc url to a custom ethereum node
    * @return    {Promise<Object, Error>}                    a promise that resolves to the identity document
    */
