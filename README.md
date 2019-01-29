@@ -30,7 +30,7 @@ help other identities recover.
         * [.getDidDocument()](#MuPort+getDidDocument) ⇒ <code>Object</code>
         * [.getRecoveryDelegateDids()](#MuPort+getRecoveryDelegateDids) ⇒ <code>Array.&lt;String&gt;</code>
         * [.updateIdentity(publicProfile, delegateDids)](#MuPort+updateIdentity) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
-        * [.signJWT()](#MuPort+signJWT) ⇒ <code>Promise.&lt;String, Error&gt;</code>
+        * [.signJWT(payload)](#MuPort+signJWT) ⇒ <code>Promise.&lt;String, Error&gt;</code>
         * [.verifyJWT(jwt, audience)](#MuPort+verifyJWT) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
         * [.encrypt(msg, toPublic, nonce)](#MuPort+encrypt) ⇒ <code>Object</code>
         * [.decrypt(ciphertext, fromPublic, nonce, toBuffer)](#MuPort+decrypt) ⇒ <code>String</code> \| <code>Buffer</code>
@@ -114,7 +114,7 @@ update one of them.
 
 <a name="MuPort+signJWT"></a>
 
-### muPort.signJWT() ⇒ <code>Promise.&lt;String, Error&gt;</code>
+### muPort.signJWT(payload) ⇒ <code>Promise.&lt;String, Error&gt;</code>
 Signs the given payload (claim) and return a promis with the JWT.
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
