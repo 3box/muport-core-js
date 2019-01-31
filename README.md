@@ -119,6 +119,11 @@ Signs the given payload (claim) and return a promis with the JWT.
 
 **Kind**: instance method of [<code>MuPort</code>](#MuPort)  
 **Returns**: <code>Promise.&lt;String, Error&gt;</code> - a promise that resolves to a JWT  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| payload | <code>\*</code> | the payload to sign |
+
 <a name="MuPort+verifyJWT"></a>
 
 ### muPort.verifyJWT(jwt, audience) ⇒ <code>Promise.&lt;Object, Error&gt;</code>
