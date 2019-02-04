@@ -153,7 +153,7 @@ class MuPort {
 
   /**
    * Signs the given payload (claim) and return a promis with the JWT.
-   *
+   * @param     {*}             payload         the payload to sign
    * @return    {Promise<String, Error>}        a promise that resolves to a JWT
    */
   async signJWT (payload) {
