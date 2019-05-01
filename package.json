@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uport-project/muport-core-js.git"
+    "url": "git+https://github.com/3box/muport-core-js.git"
   },
   "author": "",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/uport-project/muport-core-js/issues"
+    "url": "https://github.com/3box/muport-core-js/issues"
   },
-  "homepage": "https://github.com/uport-project/muport-core-js#readme",
+  "homepage": "https://github.com/3box/muport-core-js#readme",
   "dependencies": {
     "babel-runtime": "^6.26.0",
     "bip39": "^2.5.0",
