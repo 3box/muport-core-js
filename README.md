@@ -1,5 +1,6 @@
 # µPort core
 [![CircleCI](https://circleci.com/gh/uport-project/muport-core-js.svg?style=svg&circle-token=d007f3bfb7d76e05bea029ca9aa1dd523c97d453)](https://circleci.com/gh/uport-project/muport-core-js) [![codecov](https://codecov.io/gh/uport-project/muport-core-js/branch/master/graph/badge.svg?token=G53BcQfF8N)](https://codecov.io/gh/uport-project/muport-core-js)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2F3box%2Fmuport-core-js.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2F3box%2Fmuport-core-js?ref=badge_shield)
 
 This library is intended to be used to create, update, and recover µPort identities, as well as using the identity to sign and encrypt data.
 
@@ -248,3 +249,7 @@ Resovles the identity document for the given DID.
 | opts.ipfsConf | <code>Object</code> | configuration options for ipfs-mini |
 | opts.rpcProviderUrl | <code>String</code> | rpc url to a custom ethereum node |
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2F3box%2Fmuport-core-js.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2F3box%2Fmuport-core-js?ref=badge_large)
